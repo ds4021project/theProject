@@ -18,22 +18,12 @@ class TreeNode(object):
         else:
             return False
         
-    def parent(self):
-        return self.parent        
 
     def is_leaf(self):
         if len(self.children) == 0:
             return True
         else:
             return False
-
-    def find_subnode(self,name:str):
-        found=None
-        for i in self.children:
-            if i.name==name:
-                found=i
-
-        return found
 
 
     def depth(self):    # Depth of current node
@@ -68,19 +58,19 @@ class Tree:
                 self.root=node
         self.nodes.append(node)
 
-    def search(self,data):  # Search and return index of Node in Tree
-        index=-1
-        for N in self.nodes:
-            index+=1
-            if N.name == data:
-                break
-        if index == len(self.nodes)-1:
-            return -1  #node not found
-        else:
-            return index
+    def search(self,data:str):  # Search and return index of Node in Tree
+        index=[]
+        for i in self.nodes:
+            if i.name==data:
+                index.append(i)
+        return index
 
-    def getNode(self,id):
-        return self.nodes[id]
+    def search_startswith(self,data:str):  # Search and return index of Node in Tree
+        index=[]
+        for i in self.nodes:
+            if i.name.startswith(data):
+                index.append(i)
+        return index
 
     def root(self):
         return self.root
@@ -139,10 +129,13 @@ class FileSystem:
     def paste (self,destny_node:TreeNode):
         if self.virtual_copy_space != None and self.virtual_copy_space not in destny_node.children:
             self.dir_tree.insert(self.virtual_copy_space,destny_node)
+            #self.dir_tree.nodes.append(self.virtual_copy_space)
 
-        elif self.virtual_copy_space in self.dir_tree.children:
+        elif self.virtual_copy_space in destny_node.children:
+            self.virtual_copy_space=deepcopy(self.virtual_copy_space)
             self.virtual_copy_space.name+=" copy"
             self.dir_tree.insert(self.virtual_copy_space,destny_node)
+            #self.dir_tree.nodes.append(self.virtual_copy_space)
 
         else :
             print("unvalid paste")
@@ -181,15 +174,37 @@ class FileSystem:
 
 ex=FileSystem()
 c=TreeNode("C")
+d=TreeNode("D")
 ex.create_drive(c)
+ex.create_drive(d)
 ex.cd(c)
 download=TreeNode("download")
+video=TreeNode("video")
 ex.mkdir(download)
+ex.mkdir(video)
 ex.cd(download)
-
 print(ex.current)
 ex.pwd()
 
-print(download.depth())
+ex.dir_track[0].disp()
 
-print(ex.dir_track[0].disp())
+ex.copy(download)
+ex.paste(d)
+ex.paste(d)
+ex.paste(d)
+ex.dir_track[0].disp()
+
+print(ex.dir_tree.search("download copy copy"))
+
+"""ex.go_backward_arrow()
+ex.pwd()
+ex.go_backward_arrow()
+ex.pwd()
+
+ex.go_forward_arrow()
+ex.pwd()
+ex.go_forward_arrow()
+ex.pwd()
+
+ex.reset_up_arrow()
+ex.pwd()"""
