@@ -1,0 +1,3 @@
+main/__pycache__/*
+main/migrations/*
+fe/__pycache__/*

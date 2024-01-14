@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <script
+        src="https://cpwebassets.codepen.io/assets/common/stopExecutionOnTimeout-2c7831bb44f98c1391d6a4ffda0e1fd302503391ca806e7fcc7b9b87197aec26.js"></script>
+    <title>Data Strcutrue Final Project File Explorer</title>
+    {% load static %}
+    <link rel='stylesheet' href='https://pro.fontawesome.com/releases/v5.10.0/css/all.css'>
+    <style>
+        * {
+            font-family: Segoe UI;
+            padding: 0;
+            margin: 0;
+            position: relative;
+            color: #8695A7;
+            font-size: 16px;
+        }
+
+        #file-treeview ul {
+            list-style-type: none;
+            /* padding-left: 10px; */
+        }
+
+        #file-treeview {
+            margin: 0;
+            padding: 0;
+        }
+
+        #file-treeview .hoverable {
+            cursor: pointer;
+            right: 0;
+            display: block;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            background-position: 22.5px center;
+            background-repeat: no-repeat;
+            background-size: 20px 20px;
+            background-image: url("{% static 'img/folder.png' %}");
+            padding-left: 5px;
+        }
+
+        #file-treeview .hoverable .overlay {
+            width: 400px;
+            height: 31px;
+            background-color: #E8EFF7;
+            z-index: -1;
+            position: absolute;
+            left: -200px;
+            top: 0;
+            visibility: hidden;
+        }
+
+        #file-treeview .hoverable:hover .overlay {
+            visibility: visible;
+        }
+
+        #file-treeview .caret {
+            cursor: pointer;
+            -webkit-user-select: none;
+            /* Safari 3.1+ */
+            -moz-user-select: none;
+            /* Firefox 2+ */
+            -ms-user-select: none;
+            /* IE 10+ */
+            user-select: none;
+        }
+
+        #file-treeview .caret::before {
+            content: "\f054";
+            display: inline-block;
+            margin-right: 35px;
+            font-family: "Font Awesome 5 Pro";
+            width: 10px;
+        }
+
+        #file-treeview .caret-down::before {
+            transform: rotate(90deg);
+        }
+
+        #file-treeview .nested {
+            display: none;
+            padding-left: 15px;
+        }
+
+        #file-treeview .active {
+            display: block;
+        }
+
+        #file-treeview .dirname {
+            padding-left: 50px;
+        }
+
+        #header {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 50px;
+            -webkit-box-shadow: inset 0px 0px 0px 1px #E0E0E0;
+            box-shadow: inset 0px 0px 0px 1px #E0E0E0;
+            overflow: hidden;
+        }
+
+        #sidebar {
+            position: absolute;
+            left: 0;
+            top: 50px;
+            width: 200px;
+            height: calc(100vh - 50px);
+            -webkit-box-shadow: inset 0px 0px 0px 1px #E0E0E0;
+            box-shadow: inset 0px 0px 0px 1px #E0E0E0;
+            overflow: hidden;
+        }
+
+        #main {
+            position: absolute;
+            left: 200px;
+            top: 50px;
+            width: calc(100vw - 200px);
+            height: calc(100vh - 50px);
+            -webkit-box-shadow: inset 0px 0px 0px 1px #E0E0E0;
+            box-shadow: inset 0px 0px 0px 1px #E0E0E0;
+            background-color: #FFF;
+            overflow: hidden;
+        }
+
+        #header .action {
+            float: left;
+            margin-left: 5px;
+            height: 35px;
+            line-height: 35px;
+            text-align: left;
+            padding-left: 10px;
+            padding-right: 10px;
+            margin-top: 6.5px;
+            border: 1px solid rgba(0, 0, 0, 0);
+            cursor: default;
+        }
+
+        #header .action i {
+            width: 20px;
+        }
+
+        #header .action:hover {
+            background-color: #E8EFF7;
+            border: 1px solid #A4CEF9;
+        }
+
+        #main-header {
+            width: 100%;
+            height: 35px;
+            position: absolute;
+            -webkit-box-shadow: inset 0px 0px 0px 1px #E0E0E0;
+            box-shadow: inset 0px 0px 0px 1px #E0E0E0;
+        }
+
+        #main-header #path {
+            cursor: default;
+        }
+
+        #main-header #path div,
+        #main-header #path i {
+            line-height: 33px;
+            height: 33px;
+            float: left;
+            border: 1px solid rgba(0, 0, 0, 0);
+        }
+
+        #main-header #path div {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        #main-header #path i {
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+
+        #main-header #path div:hover,
+        #main-header #path i:hover {
+            background-color: #E8EFF7;
+            border: 1px solid #A4CEF9;
+        }
+
+        #files {
+            position: absolute;
+            top: 35px;
+            left: 0;
+            width: calc(100% - 60px);
+            height: calc(100% - 95px);
+            padding: 30px;
+            overflow-y: scroll;
+        }
+
+        #files .file {
+            float: left;
+            width: 100px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            background-position: center 10px;
+            background-repeat: no-repeat;
+            background-size: 40px 40px;
+            border: 1px solid rgba(0, 0, 0, 0);
+            cursor: default;
+        }
+
+        .drive {
+            background-image: url("{% static 'img/drive.png' %}") !important;
+        }
+
+        .folder {
+            background-image: url("{% static 'img/folder.png' %}") !important;
+        }
+
+        .rawFile {
+            background-image: url("{% static 'img/file.png' %}") !important;
+        }
+
+        #files .file:hover {
+            background-color: #E8EFF7;
+            border: 1px solid #A4CEF9;
+        }
+
+        #files .file span {
+            padding-bottom: 5px;
+            max-width: 90%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .loading {
+            --matter-helper-theme: var(--matter-theme-rgb, var(--matter-primary-rgb, 33, 150, 243));
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            border: none;
+            height: 3px;
+            vertical-align: middle;
+            color: rgb(var(--matter-helper-theme));
+            background-color: rgba(var(--matter-helper-theme), 0.12);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+
+        .loading::-webkit-progress-bar {
+            background-color: transparent;
+        }
+
+        .loading::-webkit-progress-value {
+            background-color: currentColor;
+            transition: all 0.2s;
+        }
+
+        .loading::-moz-progress-bar {
+            background-color: currentColor;
+            transition: all 0.2s;
+        }
+
+        .loading::-ms-fill {
+            border: none;
+            background-color: currentColor;
+            transition: all 0.2s;
+        }
+
+        .loading:indeterminate {
+            background-size: 200% 100%;
+            background-image: linear-gradient(90deg, currentColor 16%, transparent 0), linear-gradient(90deg, currentColor 16%, transparent 0), linear-gradient(90deg, currentColor 25%, transparent 0);
+            animation: progress-linear 1.8s linear infinite;
+        }
+
+        .loading:indeterminate::-webkit-progress-value {
+            background-color: transparent;
+        }
+
+        .loading:indeterminate::-moz-progress-bar {
+            background-color: transparent;
+        }
+
+        .loading:indeterminate::-ms-fill {
+            animation-name: none;
+        }
+
+        .loading.hidden {
+            display: none;
+        }
+
+        @keyframes progress-linear {
+            0% {
+                background-position: 32% 0, 32% 0, 50% 0;
+            }
+
+            2% {
+                background-position: 32% 0, 32% 0, 50% 0;
+            }
+
+            21% {
+                background-position: 32% 0, -18% 0, 0 0;
+            }
+
+            42% {
+                background-position: 32% 0, -68% 0, -27% 0;
+            }
+
+            50% {
+                background-position: 32% 0, -93% 0, -46% 0;
+            }
+
+            56% {
+                background-position: 32% 0, -118% 0, -68% 0;
+            }
+
+            66% {
+                background-position: -11% 0, -200% 0, -100% 0;
+            }
+
+            71% {
+                background-position: -32% 0, -200% 0, -100% 0;
+            }
+
+            79% {
+                background-position: -54% 0, -242% 0, -100% 0;
+            }
+
+            86% {
+                background-position: -68% 0, -268% 0, -100% 0;
+            }
+
+            to {
+                background-position: -100% 0, -300% 0, -100% 0;
+            }
+        }
+    </style>
+
+    <script>
+        window.console = window.console || function (t) { };
+    </script>
+
+
+
+</head>
+
+<body translate="no">
+    <div id="header">
+        <div class="action" id="newFolder" onclick="newFolder()"><i class="fal fa-folder"></i> New folder</div>
+        <div class="action" id="newFile" onclick="newFile()"><i class="fal fa-file"></i> New file</div>
+        <!-- <div class="action" id="upload"><i class="fal fa-arrow-to-top"></i> Upload</div> -->
+        <!-- <div class="action" id="sort"><i class="fal fa-sort-amount-down"></i> Sort by</div> -->
+        <div class="action" id="refresh" onclick="refresh()"><i class="fal fa-sync"></i> Refresh</div>
+    </div>
+    <div id="sidebar">
+        <ul id="file-treeview">
+            <li><span class="caret hoverable caret-down">Files<div class="overlay"></div></span>
+                <ul class="nested active">
+                    <li><span class="dirname hoverable active-item">Desktop<div class="overlay"></div></span></li>
+                    <li><span class="dirname hoverable">Downloads<div class="overlay"></div></span></li>
+                    <li><span class="caret hoverable">Documents<div class="overlay"></div></span>
+                        <ul class="nested">
+                            <li><span class="dirname hoverable">School<div class="overlay"></div></span></li>
+                            <li><span class="dirname hoverable">Work<div class="overlay"></div></span></li>
+                            <li><span class="caret hoverable">Coding<div class="overlay"></div></span>
+                                <ul class="nested">
+                                    <li><span class="dirname hoverable">Python<div class="overlay"></div></span></li>
+                                    <li><span class="dirname hoverable">Java<div class="overlay"></div></span></li>
+                                    <li><span class="dirname hoverable">Javascript<div class="overlay"></div></span>
+                                    </li>
+                                    <li><span class="caret hoverable">PHP<div class="overlay"></div></span>
+                                        <ul class="nested">
+                                            <li><span class="dirname hoverable">Explorer<div class="overlay"></div>
+                                                </span></li>
+                                            <li><span class="dirname hoverable">Search Al...<div class="overlay"></div>
+                                                </span></li>
+                                            <li><span class="dirname hoverable">File Upload<div class="overlay"></div>
+                                                </span></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li><span class="caret hoverable">Animations<div class="overlay"></div></span>
+                                <ul class="nested">
+                                    <li><span class="dirname hoverable">Blender<div class="overlay"></div></span></li>
+                                    <li><span class="dirname hoverable">Examples<div class="overlay"></div></span></li>
+                                    <li><span class="dirname hoverable">Rendered<div class="overlay"></div></span></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li><span class="dirname hoverable">Images<div class="overlay"></div></span></li>
+                    <li><span class="dirname hoverable">Music<div class="overlay"></div></span></li>
+                    <li><span class="dirname hoverable">Videos<div class="overlay"></div></span></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div id="main">
+        <div id="main-header">
+            <div id="path">
+                {% for k,v in tehCurentPath.items %}
+                <a href="{{v.href}}">
+                    <div>{{k}}</div><i class="fal fa-chevron-right"></i>
+                </a>
+                {% endfor %}
+                <!-- <div>Files</div><i class="fal fa-chevron-right"></i> -->
+                <!-- <div>Desktop</div> -->
+            </div>
+        </div>
+        <div id="files">
+            <progress class="loading" id="thePr"></progress>
+
+            {% for k,v in listOfFiles.items %}
+            <a href="{{v.href}}">
+                <div class="file {{v.type}}" oncontextmenu="showContextMenu(event, '{{v.forO}}'); return false;">
+                    <span>{{k}}</span>
+                    <span></span>
+                </div>
+            </a>
+            {% endfor %}
+            <div id="contextMenu"
+                style="visibility: hidden; position: absolute; background-color: #f5f5f5; border: 1px solid #ccc; padding: 10px;">
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li id="option1">Delete</li>
+                    <li id="option2">Rename</li>
+                </ul>
+            </div>
+
+            <!-- <div class="file drive">
+                <span>Build</span>
+            </div>
+            <div class="file folder">
+                <span>homework.txt</span>
+            </div>
+            <div class="file rawFile">
+                <span>index.html</span>
+            </div> -->
+        </div>
+    </div>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
+    <script id="rendered-js">
+        var currentKey;
+
+        function refresh(){
+            location.reload();
+        }
+        function newFolder() {
+            let newfolderName = prompt("new folder name ?");
+            $.ajax({
+                url: "{{apil}}",
+                type: 'POST',
+                data: { key: "{{currentPathForNew}}", new:newfolderName, mode: "newFolder" },
+                success: function (response) {
+                    location.reload(true);
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
+        }
+        function newFile() {
+            let newfileName = prompt("new file name ?");
+            $.ajax({
+                url: "{{apil}}",
+                type: 'POST',
+                data: { key: "{{currentPathForNew}}", new:newfileName, mode: "newFile" },
+                success: function (response) {
+                    location.reload(true);
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
+        }
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min) + min);
+        }
+        setTimeout(function () {
+            document.getElementById("thePr").classList.add("hidden");
+        }, getRandomInt(200, 600));
+        function showContextMenu(e, key) {
+            e.preventDefault();
+            // use key to custome
+            var contextMenu = document.getElementById('contextMenu');
+            contextMenu.style.visibility = 'visible';
+            contextMenu.style.top = (e.pageY - 60) + 'px';
+            contextMenu.style.left = (e.pageX - 180) + 'px';
+            currentKey = key;
+        }
+        document.getElementById('option1').addEventListener('click', function () {
+            // alert('You clicked Option 1 =>' + currentKey);
+            if (confirm("are you sure to delete this ?")) {
+                $.ajax({
+                    url: "{{apil}}",
+                    type: 'POST',
+                    data: { key: currentKey, mode: "delete" },
+                    success: function (response) {
+                        location.reload(true);
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+            }
+        });
+
+        document.getElementById('option2').addEventListener('click', function () {
+            // alert('You clicked Option 2 =>' + currentKey);
+            let userInput = prompt("rename to ?");
+            if (confirm("rename to " + userInput + " ?")) {
+                $.ajax({
+                    url: "{{apil}}",
+                    type: 'POST',
+                    data: { key: currentKey, to: userInput, mode: "rename" },
+                    success: function (response) {
+                        location.reload(true);
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+            }
+
+        });
+        document.addEventListener('click', function (e) {
+            document.getElementById('contextMenu').style.visibility = 'hidden';
+        });
+
+
+        function load() {
+            var toggler = document.getElementsByClassName("caret");
+            var i;
+
+            for (i = 0; i < toggler.length; i++) {
+                if (window.CP.shouldStopExecution(0)) break;
+                toggler[i].addEventListener("click", function () {
+                    this.parentElement.querySelector(".nested").classList.toggle("active");
+                    this.classList.toggle("caret-down");
+                });
+            } window.CP.exitedLoop(0);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            load();
+        });
+        //# sourceURL=pen.js
+    </script>
+
+
+</body>
+
+</html>
