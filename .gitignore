@@ -1,3 +1,5 @@
 main/__pycache__/*
 main/migrations/*
 fe/__pycache__/*
+theFileExplorerBase/*
+main/templatetags/*

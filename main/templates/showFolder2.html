@@ -355,7 +355,7 @@
         <div class="action" id="refresh" onclick="refresh()"><i class="fal fa-sync"></i> Refresh</div>
     </div>
     <div id="sidebar">
-        <ul id="file-treeview">
+        <!-- <ul id="file-treeview">
             <li><span class="caret hoverable caret-down">Files<div class="overlay"></div></span>
                 <ul class="nested active">
                     <li><span class="dirname hoverable active-item">Desktop<div class="overlay"></div></span></li>
@@ -396,6 +396,11 @@
                     <li><span class="dirname hoverable">Videos<div class="overlay"></div></span></li>
                 </ul>
             </li>
+        </ul> -->
+        <ul id="file-treeview">
+            {% for name, children in fileTree.items %}
+                {% include 'fileNode.html' %}
+            {% endfor %}
         </ul>
     </div>
 
@@ -427,6 +432,8 @@
                 <ul style="list-style: none; padding: 0; margin: 0;">
                     <li id="option1">Delete</li>
                     <li id="option2">Rename</li>
+                    <li id="option3">Copy</li>
+                    <li id="option4">Move</li>
                 </ul>
             </div>
 
@@ -549,7 +556,6 @@
         document.addEventListener("DOMContentLoaded", function () {
             load();
         });
-        //# sourceURL=pen.js
     </script>
 
 

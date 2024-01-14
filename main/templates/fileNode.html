@@ -1,0 +1,16 @@
+{% load stringFilters %}
+
+<li>
+    {% if children %}
+    <span class="caret hoverable">{{ name }}<div class="overlay"></div></span>
+    {% else %}
+    <span class="dirname hoverable">{{ name }}<div class="overlay"></div></span>
+    {% endif %}
+    {% if children %}
+        <ul class="nested{% if not forloop.parentloop.revcounter0 %} active{% endif %}">
+            {% for name, children in children.items %}
+                {% include 'fileNode.html' %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+</li>
