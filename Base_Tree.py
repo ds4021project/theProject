@@ -58,14 +58,14 @@ class Tree:
                 self.root=node
         self.nodes.append(node)
 
-    def search(self,data:str):  # Search and return index of Node in Tree
+    def search(self,data:str):  # Search and return Node in Tree
         index=[]
         for i in self.nodes:
             if i.name==data:
                 index.append(i)
         return index
 
-    def search_startswith(self,data:str):  # Search and return index of Node in Tree
+    def search_startswith(self,data:str):  # Search via starts with and return Node in Tree
         index=[]
         for i in self.nodes:
             if i.name.startswith(data):
@@ -122,28 +122,34 @@ class FileSystem:
         else:
             print(f"mkdir {node.name} NOT succ")
 
+
     def copy(self,node:TreeNode):
         self.virtual_copy_space=deepcopy(node)
 
 
-    def paste (self,destny_node:TreeNode):
-        if self.virtual_copy_space != None and self.virtual_copy_space not in destny_node.children:
-            self.dir_tree.insert(self.virtual_copy_space,destny_node)
-            #self.dir_tree.nodes.append(self.virtual_copy_space)
+    def paste (self,destiny_node:TreeNode):
+        if self.virtual_copy_space is not None and self.virtual_copy_space not in destiny_node.children:
+            self.dir_tree.insert(self.virtual_copy_space,destiny_node)
 
-        elif self.virtual_copy_space in destny_node.children:
+
+        elif self.virtual_copy_space in destiny_node.children:
             self.virtual_copy_space=deepcopy(self.virtual_copy_space)
             self.virtual_copy_space.name+=" copy"
-            self.dir_tree.insert(self.virtual_copy_space,destny_node)
-            #self.dir_tree.nodes.append(self.virtual_copy_space)
+            self.dir_tree.insert(self.virtual_copy_space,destiny_node)
+
 
         else :
             print("unvalid paste")
-        #self.virtual_copy_space=None
+            #self.virtual_copy_space=None
 
-    def delete(self,node:TreeNode):
-        node.parent.children.remove(node)
-        del node
+
+    def delete(self, node: TreeNode):   #recursive delete
+        if not node.children:
+            self.dir_tree.nodes.remove(node)
+            node.parent.children.remove(node)
+        else:
+            for child in node.children.copy():
+                self.delete(child)
 
 
     def go_forward_arrow(self):
@@ -161,10 +167,10 @@ class FileSystem:
         else:
             print("we are at This PC")
 
+
     def reset_up_arrow(self):
         self.dir_track=[]
         self.dir_track.append(self.dir_tree.root)
-
 
 
 
@@ -194,9 +200,17 @@ ex.paste(d)
 ex.paste(d)
 ex.dir_track[0].disp()
 
+print(type(ex.dir_tree.nodes[-1]))
+ex.delete(ex.dir_tree.nodes[-1])
+
+
+ex.dir_track[0].disp()
+print(ex.dir_tree.nodes)
+
 print(ex.dir_tree.search("download copy copy"))
 
-"""ex.go_backward_arrow()
+"""
+ex.go_backward_arrow()
 ex.pwd()
 ex.go_backward_arrow()
 ex.pwd()
@@ -207,4 +221,5 @@ ex.go_forward_arrow()
 ex.pwd()
 
 ex.reset_up_arrow()
-ex.pwd()"""
+ex.pwd()
+"""
