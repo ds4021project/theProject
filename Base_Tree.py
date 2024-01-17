@@ -203,14 +203,27 @@ class FileSystem:
             #self.virtual_copy_space=None
 
 
-    def delete(self, node: TreeNode):   #recursive delete
+        """    
+        def delete(self, node: TreeNode):   #recursive delete
         if not node.children:
             self.dir_tree.nodes.remove(node)
             node.parent.children.remove(node)
         else:
             for child in node.children.copy():
                 self.delete(child)
+        """
 
+    def delete(self, node: TreeNode):
+        if not node.children:
+            if node.parent:
+                node.parent.children.remove(node)
+            self.dir_tree.nodes.remove(node)
+        else:
+            for child in node.children.copy():
+                self.delete(child)
+            if node.parent:
+                node.parent.children.remove(node)
+            self.dir_tree.nodes.remove(node)
 
     def go_forward_arrow(self):
         if len(self.dir_track) >=1:
@@ -260,6 +273,8 @@ ex.paste(d)
 ex.paste(d)
 txt=FileNode("hello","txt")
 ex.addfile(txt)
+ex.dir_track[0].disp()
+ex.delete(d)
 ex.dir_track[0].disp()
 """
 print(type(ex.dir_tree.nodes[-1]))
