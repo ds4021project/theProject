@@ -58,7 +58,7 @@ class DirNode(TreeNode):
         self.children.append(node)
 
     def disp(self):
-        pptree.print_tree(self,'children','name')
+        pptree.print_tree(self,'children','name'+' type')
 
 
 class FileNode(TreeNode):
@@ -125,6 +125,7 @@ class FileSystem:
         self.dir_track=[self.dir_tree.root]
         self.go_forward_arrow_stack=[]
         self.virtual_copy_space=None
+        self.is_cuted=False
 
     def pwd(self):
         str=""
@@ -188,30 +189,25 @@ class FileSystem:
 
 
     def paste(self,destiny_node:TreeNode):
-        if self.virtual_copy_space is not None and self.virtual_copy_space not in destiny_node.children:
-            self.dir_tree.insert(self.virtual_copy_space,destiny_node)
+        if self.is_cuted==False:
+            if self.virtual_copy_space is not None and self.virtual_copy_space not in destiny_node.children:
+                self.dir_tree.insert(self.virtual_copy_space,destiny_node)
 
 
-        elif self.virtual_copy_space in destiny_node.children:
-            self.virtual_copy_space=deepcopy(self.virtual_copy_space)
-            self.virtual_copy_space.name+=" copy"
-            self.dir_tree.insert(self.virtual_copy_space,destiny_node)
+            elif self.virtual_copy_space in destiny_node.children:
+                self.virtual_copy_space=deepcopy(self.virtual_copy_space)
+                self.virtual_copy_space.name+=" copy"
+                self.dir_tree.insert(self.virtual_copy_space,destiny_node)
 
+            else :
+                print("unvalid paste")
+                #self.virtual_copy_space=None
+                
+        else:   # cut
+            self.virtual_copy_space.parent.children.remove(self.virtual_copy_space)
+            destiny_node.add_child(self.virtual_copy_space)
+            self.is_cuted=False
 
-        else :
-            print("unvalid paste")
-            #self.virtual_copy_space=None
-
-
-        """    
-        def delete(self, node: TreeNode):   #recursive delete
-        if not node.children:
-            self.dir_tree.nodes.remove(node)
-            node.parent.children.remove(node)
-        else:
-            for child in node.children.copy():
-                self.delete(child)
-        """
 
     def delete(self, node: TreeNode):
         if not node.children:
@@ -224,6 +220,14 @@ class FileSystem:
             if node.parent:
                 node.parent.children.remove(node)
             self.dir_tree.nodes.remove(node)
+
+
+    def cut(self, node: TreeNode):
+        self.is_cuted=True
+        self.virtual_copy_space=node
+        
+    
+
 
     def go_forward_arrow(self):
         if len(self.dir_track) >=1:
@@ -275,6 +279,8 @@ txt=FileNode("hello","txt")
 ex.addfile(txt)
 ex.dir_track[0].disp()
 ex.delete(d)
+ex.cut(txt)
+ex.paste(video)
 ex.dir_track[0].disp()
 """
 print(type(ex.dir_tree.nodes[-1]))
