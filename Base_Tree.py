@@ -1,13 +1,33 @@
 import pptree
 from copy import deepcopy
+from abc import ABC, abstractmethod 
+
+class TreeNode(ABC):
+
+    @abstractmethod
+    def __repr__(self):
+        pass
+
+    @abstractmethod
+    def is_root(self):
+            pass
+    
+    @abstractmethod
+    def is_leaf(self):
+            pass
+
+    @abstractmethod
+    def depth(self):   
+            pass
 
 
-class TreeNode(object):
+class DirNode(TreeNode):
     "Node of a Tree"
-    def __init__(self, name:str,parent=None):
+    def __init__(self, name:str,type="directory"):
         self.name = name
-        self.parent=parent
+        self.parent=None
         self.children = []
+        self.type=type
 
     def __repr__(self):
         return self.name
@@ -41,16 +61,37 @@ class TreeNode(object):
         pptree.print_tree(self,'children','name')
 
 
+class FileNode(TreeNode):
+    "Node of a Tree"
+    def __init__(self, name:str,type:str):
+        self.name = name
+        self.parent=None
+        self.children = []
+        self.type=type
+
+
+    def __repr__(self):
+        return f"{self.name}.{self.type}"
+    
+    def is_root(self):
+            return False
+
+    def is_leaf(self):
+            return True
+
+    def depth(self):    # Depth of current node
+            return 0
+
 
 class Tree:
     """
-    Tree implemenation as a collection of TreeNode objects
+    Tree implemenation as a collection of DirNode objects
     """
     def __init__(self):
        self.root=None
        self.nodes=[]
 
-    def insert(self,node,parent):   # Insert a node into tree
+    def insert(self,node:TreeNode,parent:DirNode):   # Insert a node into tree
         if parent is not None:
             parent.add_child(node)
         else:
@@ -65,7 +106,7 @@ class Tree:
                 index.append(i)
         return index
 
-    def search_startswith(self,data:str):  # Search via starts with and return Node in Tree
+    def search_startswith(self,data:str):  # Search via startswith and return Node in Tree
         index=[]
         for i in self.nodes:
             if i.name.startswith(data):
@@ -79,7 +120,7 @@ class FileSystem:
     """FileSystem class via tree implementation"""
     def __init__(self):
         self.dir_tree=Tree()
-        self.dir_tree.root=TreeNode("this PC",None)
+        self.dir_tree.root=DirNode("this PC",None)
         self.current=self.dir_tree.root
         self.dir_track=[self.dir_tree.root]
         self.go_forward_arrow_stack=[]
@@ -93,7 +134,7 @@ class FileSystem:
         return str[-2]
 
 
-    def create_drive(self,node:TreeNode):
+    def create_drive(self,node:DirNode):
         if self.dir_tree.root != node:
             node.parent=self.current
             self.dir_tree.insert(node,self.current)
@@ -102,7 +143,7 @@ class FileSystem:
             print(f"drive NOT {node.name} created")
 
 
-    def cd(self,node:TreeNode):
+    def cd(self,node:DirNode):
         if node in self.current.children:
             self.current=node
             self.dir_track.append(node)
@@ -113,21 +154,40 @@ class FileSystem:
 
 
 
-    def mkdir(self,node:TreeNode):
+    def adddir(self,node:DirNode):
         if self.current.depth() >=1 :
             self.parent=self.current
             self.dir_tree.insert(node,self.current)
-            print(f"mkdir {node.name} succ")
+            print(f"adddir {node.name} succ")
 
         else:
-            print(f"mkdir {node.name} NOT succ")
+            print(f"adddir {node.name} NOT succ")
+
+    def mkdir(self,name:str):
+        tmp=DirNode(name)
+        self.adddir(tmp)
+        
+
+    def addfile(self,node:DirNode):
+        if self.current.depth() >=1 :
+            self.parent=self.current
+            self.dir_tree.insert(node,self.current)
+            print(f"addfile {node.name} succ")
+
+        else:
+            print(f"addfile {node.name} NOT succ")
+
+    def mkfile(self,name:str,type:str):
+        tmp=FileNode(name,type)
+        self.addfile(tmp)
+
 
 
     def copy(self,node:TreeNode):
         self.virtual_copy_space=deepcopy(node)
 
 
-    def paste (self,destiny_node:TreeNode):
+    def paste(self,destiny_node:TreeNode):
         if self.virtual_copy_space is not None and self.virtual_copy_space not in destiny_node.children:
             self.dir_tree.insert(self.virtual_copy_space,destiny_node)
 
@@ -179,15 +239,15 @@ class FileSystem:
 
 
 ex=FileSystem()
-c=TreeNode("C")
-d=TreeNode("D")
+c=DirNode("C")
+d=DirNode("D")
 ex.create_drive(c)
 ex.create_drive(d)
 ex.cd(c)
-download=TreeNode("download")
-video=TreeNode("video")
-ex.mkdir(download)
-ex.mkdir(video)
+download=DirNode("download")
+video=DirNode("video")
+ex.adddir(download)
+ex.adddir(video)
 ex.cd(download)
 print(ex.current)
 ex.pwd()
@@ -198,8 +258,10 @@ ex.copy(download)
 ex.paste(d)
 ex.paste(d)
 ex.paste(d)
+txt=FileNode("hello","txt")
+ex.addfile(txt)
 ex.dir_track[0].disp()
-
+"""
 print(type(ex.dir_tree.nodes[-1]))
 ex.delete(ex.dir_tree.nodes[-1])
 
@@ -209,7 +271,7 @@ print(ex.dir_tree.nodes)
 
 print(ex.dir_tree.search("download copy copy"))
 
-"""
+
 ex.go_backward_arrow()
 ex.pwd()
 ex.go_backward_arrow()
