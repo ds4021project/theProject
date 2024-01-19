@@ -23,11 +23,12 @@ class TreeNode(ABC):
 
 class DirNode(TreeNode):
     "Node of a Tree"
-    def __init__(self, name:str,type="directory"):
+    def __init__(self, name:str,size=0,type="directory"):
         self.name = name
         self.parent=None
         self.children = []
         self.type=type
+        self.size=size
 
     def __repr__(self):
         return self.name
@@ -118,11 +119,12 @@ class Tree:
     
 class FileSystem:
     """FileSystem class via tree implementation"""
-    def __init__(self):
+    def __init__(self,FileSystem_size:int):
         self.dir_tree=Tree()
         self.dir_tree.root=DirNode("this PC",None)
         self.current=self.dir_tree.root
         self.dir_track=[self.dir_tree.root]
+        self.FileSystem_size=FileSystem_size
         self.go_forward_arrow_stack=[]
         self.virtual_copy_space=None
         self.is_cuted=False
@@ -135,13 +137,23 @@ class FileSystem:
         return str[-2]
 
 
-    def create_drive(self,node:DirNode):
-        if self.dir_tree.root != node:
+
+
+    def add_drive(self,node:DirNode):
+        if self.current.depth() != 1 and self.FileSystem_size >= node.size:
             node.parent=self.current
             self.dir_tree.insert(node,self.current)
+            self.FileSystem_size -= node.size
             print(f"drive {node.name} created succ")
         else:
             print(f"drive NOT {node.name} created")
+
+
+
+    def mkdrive(self,name:str,drive_size:int):
+            tmp=DirNode(name,drive_size)
+            self.add_drive(tmp)
+
 
 
     def cd(self,node:DirNode):
@@ -155,32 +167,32 @@ class FileSystem:
 
 
 
-    def adddir(self,node:DirNode):
+    def addـdir(self,node:DirNode):
         if self.current.depth() >=1 :
             self.parent=self.current
             self.dir_tree.insert(node,self.current)
-            print(f"adddir {node.name} succ")
+            print(f"addـdir {node.name} succ")
 
         else:
-            print(f"adddir {node.name} NOT succ")
+            print(f"addـdir {node.name} NOT succ")
 
     def mkdir(self,name:str):
         tmp=DirNode(name)
-        self.adddir(tmp)
+        self.addـdir(tmp)
         
 
-    def addfile(self,node:DirNode):
+    def addـfile(self,node:DirNode):
         if self.current.depth() >=1 :
             self.parent=self.current
             self.dir_tree.insert(node,self.current)
-            print(f"addfile {node.name} succ")
+            print(f"addـfile {node.name} succ")
 
         else:
-            print(f"addfile {node.name} NOT succ")
+            print(f"addـfile {node.name} NOT succ")
 
     def mkfile(self,name:str,type:str):
         tmp=FileNode(name,type)
-        self.addfile(tmp)
+        self.addـfile(tmp)
 
 
 
@@ -255,16 +267,16 @@ class FileSystem:
 
 
 
-ex=FileSystem()
-c=DirNode("C")
-d=DirNode("D")
-ex.create_drive(c)
-ex.create_drive(d)
+ex=FileSystem(100)
+c=DirNode("C",20)
+d=DirNode("D",10)
+ex.add_drive(c)
+ex.add_drive(d)
 ex.cd(c)
 download=DirNode("download")
 video=DirNode("video")
-ex.adddir(download)
-ex.adddir(video)
+ex.addـdir(download)
+ex.addـdir(video)
 ex.cd(download)
 print(ex.current)
 ex.pwd()
@@ -276,7 +288,7 @@ ex.paste(d)
 ex.paste(d)
 ex.paste(d)
 txt=FileNode("hello","txt")
-ex.addfile(txt)
+ex.addـfile(txt)
 ex.dir_track[0].disp()
 ex.delete(d)
 ex.cut(txt)
