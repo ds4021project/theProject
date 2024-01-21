@@ -33,9 +33,9 @@ theFileExplorerObject = loadPickle()
 
 def calCurrentPath() :
     theDict = {}
-    print(theFileExplorerObject.pwd(),"****************************")
-    currentPath = theFileExplorerObject.pwd().split("/")
-    print(currentPath,"-+-+--+-++-+-")
+    # print(theFileExplorerObject.pwd(),"****************************")
+    currentPath = theFileExplorerObject.pwd()
+    print("- "*10,currentPath)
     currentPath[0] = theFirstCurrentPath
     theBackPath = ""
     for cp in currentPath :
@@ -44,31 +44,34 @@ def calCurrentPath() :
                 theDict[cp] = {"href":reverse("listoffileroot")}
             else :
                 theBackPath += f",{cp}"
-                theDict[cp] = {"href":reverse("listoffile",args=[theBackPath.replace(",","",1)])}
+                # theDict[cp] = {"href":reverse("listoffile",args=[theBackPath.replace(",","",1)])}
+                theDict[cp] = {"href":""}
     return theDict
 def listOfFileRoot(r) :
-    print(theFileExplorerObject.get_children_dict())
+    # print(theFileExplorerObject.get_children_dict())
     theAllFile = theFileExplorerObject.get_children_dict()
     # print(theAllFile)
     theResult = {}
+    print(theAllFile)
+    # weInRoot = theFileExplorerObject.inRoot()
+    theCP = calCurrentPath()
+    showNewFile = True
+    theNameNewFolder = "folder"
+    if len(theCP) == 1 :
+        showNewFile = False
+        theNameNewFolder = "drive"
+        
     for d in theAllFile :
         # theResult[d] = {"type":"drive","forO":d,"href":reverse("listoffile",args=[d])}
-        theResult[d] = {"type":"drive","forO":d,"href":f"theJsFunctionCd('{d}')"}
-    print(calCurrentPath())
+        tmpTyp = theAllFile[d]
+        if tmpTyp == "directory" :
+            tmpTyp = "folder"
+            if len(theCP) == 1 :
+                tmpTyp = "drive"
+        theResult[d] = {"type":tmpTyp,"forO":d,"href":f"theJsFunctionCd('{d}')"}
+    # print(calCurrentPath())
     # return render(r,"showFolder2.html",{"tehCurentPath":calCurrentPath(),"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(r)})
-    return render(r,"showFolder2.html",{"tehCurentPath":calCurrentPath(),"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":""})
-def listOfFile(r) :
-    pass
-    # thePath = makePathUsable(thePath)
-    # theAllFile = getListOfFileFromFolderPath(thePath)
-    # # print(theAllFile)
-    # theResult = getPathOfTheAllFile(thePath)
-    # currentPath = calCurrentPath(thePath)
-    # # print(currentPath)
-    # # print(theResult)
-    
-    # # return render(r,"showFolder2.html",{"tehCurentPath":currentPath,"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":thePath.replace(theRootPathOfFiles,""),"fileTree":getAllDir(r)})
-    # return render(r,"showFolder2.html",{"tehCurentPath":currentPath,"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":thePath.replace(theRootPathOfFiles,""),"fileTree":""})
+    return render(r,"showFolder2.html",{"tehCurentPath":theCP,"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":"","showNewFile":showNewFile,"theNameNewFolder":theNameNewFolder})
 
 
 @csrf_exempt
@@ -79,17 +82,19 @@ def doSomething(r) :
         data = r.POST
         print(data)
         if data['mode'] == "newFolder" :
-            print("OKokokok")
-            theNewFolder = DirNode(data['new'])
-            print(theFileExplorerObject.add_dir(theNewFolder))
-            savePickle()
+            print(theFileExplorerObject.mkdir(data['new']))
         if data['mode'] == "cd" :
-            theCdDir = DirNode(data['cd'])
-            print("=>",theCdDir)
-            print(theFileExplorerObject.cd(theCdDir))
+            print("=>",data['cd'])
+            print(theFileExplorerObject.cd_name(data['cd']))
+        if data["mode"] == "back" :
+            print(theFileExplorerObject.go_backward_arrow())
+        if data["mode"] == "forward" :
+            print(theFileExplorerObject.go_forward_arrow())
+        if data["mode"] == "up" :
+            print(theFileExplorerObject.go_backward_arrow())
         print("------------------------------------------------------------")
 
-
+        savePickle()
         return JsonResponse({"CODE":200})
     return JsonResponse({"CODE":400})
 

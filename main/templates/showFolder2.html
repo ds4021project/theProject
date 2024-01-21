@@ -348,11 +348,13 @@
 
 <body translate="no">
     <div id="header">
-        <!-- <div class="action" id="upload"><i class="fal fa-angle-double-left"></i></div> -->
-        <!-- <div class="action" id="upload"><i class="fal fa-angle-double-right"></i></div> -->
-        <!-- <div class="action" id="upload"><i class="fal fa-angle-double-up"></i></div> -->
-        <div class="action" id="newFolder" onclick="newFolder()"><i class="fal fa-folder"></i> New folder</div>
+        <a onclick="arrFunc('back')"><div class="action" id="upload"><i class="fal fa-angle-double-left"></i></div></a>
+        <a onclick="arrFunc('forward')"><div class="action" id="upload"><i class="fal fa-angle-double-right"></i></div></a>
+        <a onclick="arrFunc('up')"><div class="action" id="upload"><i class="fal fa-angle-double-up"></i></div></a>
+        <div class="action" id="newFolder" onclick="newFolder()"><i class="fal fa-folder"></i> New {{theNameNewFolder}}</div>
+        {% if showNewFile %}
         <div class="action" id="newFile" onclick="newFile()"><i class="fal fa-file"></i> New file</div>
+        {% endif %}
         <!-- <div class="action" id="upload"><i class="fal fa-arrow-to-top"></i> Upload</div> -->
         <!-- <div class="action" id="sort"><i class="fal fa-sort-amount-down"></i> Sort by</div> -->
         <div class="action" id="refresh" onclick="refresh()"><i class="fal fa-sync"></i> Refresh</div>
@@ -456,6 +458,19 @@
 
         function refresh(){
             location.reload();
+        }
+        function arrFunc(modex){
+            $.ajax({
+                url: "{{apil}}",
+                type: 'POST',
+                data: { key: "{{currentPathForNew}}", mode: modex },
+                success: function (response) {
+                    location.reload(true);
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
         }
         function theJsFunctionCd(x){
             $.ajax({

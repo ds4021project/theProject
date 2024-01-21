@@ -5,6 +5,5 @@ from .views import *
 urlpatterns = [
     path("a/",doSomething,name="doSomething"),
     # path("w/<str:thePath>",editFile,name="editfile"),
-    path("e/",listOfFile,name="listoffile"),
     path("",listOfFileRoot,name="listoffileroot"),
 ]

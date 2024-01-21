@@ -103,7 +103,7 @@ class Tree:
     def search(self,data:str):  # Search and return Node in Tree
         index=[]
         for i in self.nodes:
-            if i.name==data or data == "*" :
+            if i.name==data:
                 index.append(i)
         return index
 
@@ -130,13 +130,17 @@ class FileSystem:
         self.is_cuted=False
 
     def pwd(self):
-        str=""
+        strer = ""
+        theL = []
         for i in self.dir_track:
-            str+=i.name+"/"
-        print(str[:-1])
-        return str[-1]
-
-
+            print(i.name)
+            theL.append(i.name)
+            # strer += i.name + "/"
+        # print(strer[:-1])
+        # print(strer[:-1])
+        print(theL)
+        return theL
+    
     def get_children_dict(self):
         output_dict=dict()
         for i in self.current.children:
@@ -151,6 +155,10 @@ class FileSystem:
             ls.append(i.type)
             output_list.append(ls)
         return output_list
+
+
+
+
 
     def add_drive(self,node:DirNode):
         if self.current.depth() != 1 and self.FileSystem_size >= node.size:
@@ -168,16 +176,26 @@ class FileSystem:
             self.add_drive(tmp)
 
 
+    def name_to_node(self,name:str):
+        for i in self.current.children:
+            if name==i.name:
+                return i
+
+
 
     def cd(self,node:DirNode):
-        # if node in self.current.children:
-        self.current=node
-        self.dir_track.append(node)
-        self.go_forward_arrow_stack=[]
-        print(f"cd to {self.current.name} succ")
-        # else:
-            # print(f"cd to {self.current.name} NOT succ")
+        if node in self.current.children:
+            self.current=node
+            self.dir_track.append(node)
+            self.go_forward_arrow_stack=[]
+            print(f"cd to {self.current.name} succ")
+        else:
+            print(f"cd to {self.current.name} NOT succ")
 
+
+    def cd_name(self,name:str):
+        node=self.name_to_node(name)
+        self.cd(node)
 
 
     def add_dir(self,node:DirNode):
@@ -188,30 +206,38 @@ class FileSystem:
 
         else:
             self.add_drive(node)
-            print(f"add_dir {node.name} NOT succ, add as driver")
+            print(f"add_dir {node.name} NOT succ, add dirver")
 
     def mkdir(self,name:str):
         tmp=DirNode(name)
         self.add_dir(tmp)
         
 
-    def addـfile(self,node:DirNode):
+
+
+    def add_file(self,node:DirNode):
         if self.current.depth() >=1 :
             self.parent=self.current
             self.dir_tree.insert(node,self.current)
-            print(f"addـfile {node.name} succ")
+            print(f"add_file {node.name} succ")
 
         else:
-            print(f"addـfile {node.name} NOT succ")
+            print(f"add_file {node.name} NOT succ")
 
     def mkfile(self,name:str,type:str):
         tmp=FileNode(name,type)
-        self.addـfile(tmp)
+        self.add_file(tmp)
 
 
 
     def copy(self,node:TreeNode):
         self.virtual_copy_space=deepcopy(node)
+    
+    def copy_name(self,name:str):
+        node=self.name_to_node(name)
+        self.copy(node)        
+
+
 
 
     def paste(self,destiny_node:TreeNode):
@@ -235,6 +261,14 @@ class FileSystem:
             self.is_cuted=False
 
 
+    def paste_name(self,name:str):
+        node=self.name_to_node(name)
+        self.paste(node)        
+
+
+
+
+
     def delete(self, node: TreeNode):
         if not node.children:
             if node.parent:
@@ -247,12 +281,24 @@ class FileSystem:
                 node.parent.children.remove(node)
             self.dir_tree.nodes.remove(node)
 
+            
+    def delete_name(self,name:str):
+        node=self.name_to_node(name)
+        self.delete(node)        
+
+
+    
+
 
     def cut(self, node: TreeNode):
         self.is_cuted=True
         self.virtual_copy_space=node
         
+    def cut_name(self,name:str):
+        node=self.name_to_node(name)
+        self.cut(node)        
     
+
 
 
     def go_forward_arrow(self):
@@ -275,14 +321,57 @@ class FileSystem:
         self.dir_track=[]
         self.dir_track.append(self.dir_tree.root)
 
-    def search(self,data:str):  # Search and return Node in Tree
-        index=[]
-        for i in self.nodes:
-            if i.name==data or data == "*" :
-                index.append(i)
-        return index
-    def get_children_dict(self):
-        output_dict=dict()
-        for i in self.current.children:
-            output_dict[i.name]=i.type
-        return output_dict
+
+
+"""
+ex=FileSystem(100)
+c=DirNode("C",20)
+d=DirNode("D",10)
+ex.add_drive(c)
+ex.add_drive(d)
+ex.cd(c)
+download=DirNode("download")
+video=DirNode("video")
+ex.add_dir(download)
+ex.add_dir(video)
+ex.cd(download)
+print(ex.current)
+ex.pwd()
+
+ex.dir_track[0].disp()
+
+ex.copy(download)
+ex.paste(d)
+ex.paste(d)
+ex.paste(d)
+txt=FileNode("hello","txt")
+ex.add_file(txt)
+ex.dir_track[0].disp()
+ex.delete(d)
+ex.cut(txt)
+ex.paste(video)
+ex.dir_track[0].disp()
+
+print(type(ex.dir_tree.nodes[-1]))
+ex.delete(ex.dir_tree.nodes[-1])
+
+
+ex.dir_track[0].disp()
+print(ex.dir_tree.nodes)
+
+print(ex.dir_tree.search("download copy copy"))
+
+
+ex.go_backward_arrow()
+ex.pwd()
+ex.go_backward_arrow()
+ex.pwd()
+
+ex.go_forward_arrow()
+ex.pwd()
+ex.go_forward_arrow()
+ex.pwd()
+
+ex.reset_up_arrow()
+ex.pwd()
+"""
