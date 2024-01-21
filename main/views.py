@@ -32,6 +32,19 @@ if(not os.path.exists(thePickleFile)) :
     savePickle()
 theFileExplorerObject = loadPickle()
 
+def getAllDir() :
+    theCopyOfEx = deepcopy(theFileExplorerObject)
+    theCopyOfEx.reset_up_arrow()
+    fileTree = {}
+    print(theCopyOfEx.get_all_directory_paths())
+    for path in theCopyOfEx.get_all_directory_paths() :
+        parts = path.split('/')
+        node = fileTree
+        for part in parts:
+            node = node.setdefault(f"{part}", {})
+    print(fileTree)
+    return fileTree
+
 def calCurrentPath() :
     theDict = {}
     # print(theFileExplorerObject.pwd(),"****************************")
@@ -80,7 +93,8 @@ def listOfFileRoot(r) :
         theResult[d] = {"type":tmpTyp,"forO":d,"href":theJsFunc}
     # print(calCurrentPath())
     # return render(r,"showFolder2.html",{"tehCurentPath":calCurrentPath(),"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(r)})
-    return render(r,"showFolder2.html",{"tehCurentPath":theCP,"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":"","showNewFile":showNewFile,"theNameNewFolder":theNameNewFolder})
+    # getAllDir()
+    return render(r,"showFolder2.html",{"tehCurentPath":theCP,"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(),"showNewFile":showNewFile,"theNameNewFolder":theNameNewFolder})
 
 
 @csrf_exempt

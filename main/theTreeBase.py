@@ -69,6 +69,7 @@ class FileNode(TreeNode):
         self.parent=None
         self.children = []
         self.type=type
+        self.elemnt = ""
 
 
     def __repr__(self):
@@ -156,6 +157,12 @@ class FileSystem:
             ls.append(i.name)
             ls.append(i.type)
             output_list.append(ls)
+        return output_list
+    def getOnlyDirNode(self) :
+        output_list=[]
+        for i in self.current.children:
+            if i.type == "directory" :
+                output_list.append(i.name)
         return output_list
 
 
@@ -323,6 +330,35 @@ class FileSystem:
         self.dir_track=[]
         self.dir_track.append(self.dir_tree.root)
         self.current=self.dir_track[-1]
+
+    def removeDuplicates(self,paths):
+        newPathsN = []            
+        for path in paths :
+            if paths[0] != path :
+                newPathsN.append(f"{paths[0]}/{path}")
+        newPaths = []            
+        for path in newPathsN:
+            directories = path.split('/')
+            if len(directories) > 1 and directories[-1] == directories[-2]:
+                directories = directories[:-1]
+            newPaths.append('/'.join(directories))
+        return newPaths[1:]
+    def get_all_directory_paths(self):
+        paths = []
+        visitedNode = []
+        def traverse(node, path):
+            if node not in visitedNode :
+                if node.type == "directory":
+                    visitedNode.append(node)
+                    paths.append(path + [node.name])
+                for child_name in self.getOnlyDirNode():
+                    self.cd_name(child_name)
+                    traverse(self.current, path + [child_name])
+                    self.go_backward_arrow()
+        traverse(self.dir_tree.root, [])
+        return self.removeDuplicates(["/".join(path) for path in paths])
+
+
 
 
 
