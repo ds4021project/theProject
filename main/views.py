@@ -16,25 +16,86 @@ except :
     os.mkdir(theRootPathOfFiles)
 
 thePickleFile = "theFileExplorerBase.pickle"
-def savePickle(obj) :
-    global thePickleFile
+def savePickle() :
+    global thePickleFile, theFileExplorerObject
     with open(thePickleFile, 'wb') as handle:
-        pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(theFileExplorerObject, handle, protocol=pickle.HIGHEST_PROTOCOL)
 def loadPickle() :
     global thePickleFile
     with open(thePickleFile, 'rb') as handle:
         loadedDictVar = pickle.load(handle)
         return loadedDictVar
+
+
 if(not os.path.exists(thePickleFile)) :
-    savePickle({})
+    savePickle(FileSystem(10000000))
+theFileExplorerObject = loadPickle()
+
+def calCurrentPath() :
+    theDict = {}
+    print(theFileExplorerObject.pwd(),"****************************")
+    currentPath = theFileExplorerObject.pwd().split("/")
+    print(currentPath,"-+-+--+-++-+-")
+    currentPath[0] = theFirstCurrentPath
+    theBackPath = ""
+    for cp in currentPath :
+        if cp :
+            if cp == theFirstCurrentPath :
+                theDict[cp] = {"href":reverse("listoffileroot")}
+            else :
+                theBackPath += f",{cp}"
+                theDict[cp] = {"href":reverse("listoffile",args=[theBackPath.replace(",","",1)])}
+    return theDict
+def listOfFileRoot(r) :
+    print(theFileExplorerObject.get_children_dict())
+    theAllFile = theFileExplorerObject.get_children_dict()
+    # print(theAllFile)
+    theResult = {}
+    for d in theAllFile :
+        # theResult[d] = {"type":"drive","forO":d,"href":reverse("listoffile",args=[d])}
+        theResult[d] = {"type":"drive","forO":d,"href":f"theJsFunctionCd('{d}')"}
+    print(calCurrentPath())
+    # return render(r,"showFolder2.html",{"tehCurentPath":calCurrentPath(),"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(r)})
+    return render(r,"showFolder2.html",{"tehCurentPath":calCurrentPath(),"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":""})
+def listOfFile(r) :
+    pass
+    # thePath = makePathUsable(thePath)
+    # theAllFile = getListOfFileFromFolderPath(thePath)
+    # # print(theAllFile)
+    # theResult = getPathOfTheAllFile(thePath)
+    # currentPath = calCurrentPath(thePath)
+    # # print(currentPath)
+    # # print(theResult)
+    
+    # # return render(r,"showFolder2.html",{"tehCurentPath":currentPath,"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":thePath.replace(theRootPathOfFiles,""),"fileTree":getAllDir(r)})
+    # return render(r,"showFolder2.html",{"tehCurentPath":currentPath,"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":thePath.replace(theRootPathOfFiles,""),"fileTree":""})
 
 
-def isImage(file_path):
-    image_types = imghdr.what(file_path)
-    if image_types != None:
-        return True
-    return False
-def getfileContent(path) :
+@csrf_exempt
+def doSomething(r) :
+
+    if r.method == "POST" :
+        print("------------------------------------------------------------")
+        data = r.POST
+        print(data)
+        if data['mode'] == "newFolder" :
+            print("OKokokok")
+            theNewFolder = DirNode(data['new'])
+            print(theFileExplorerObject.add_dir(theNewFolder))
+            savePickle()
+        if data['mode'] == "cd" :
+            theCdDir = DirNode(data['cd'])
+            print("=>",theCdDir)
+            print(theFileExplorerObject.cd(theCdDir))
+        print("------------------------------------------------------------")
+
+
+        return JsonResponse({"CODE":200})
+    return JsonResponse({"CODE":400})
+
+
+
+"""def getfileContent(path) :
     fullLine = ""
     with open(path, 'r') as file:
         for line in file:
@@ -163,4 +224,4 @@ def doSomething(r) :
 
 
         return JsonResponse({"CODE":200})
-    return JsonResponse({"CODE":400})
+    return JsonResponse({"CODE":400})"""

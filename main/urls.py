@@ -4,7 +4,7 @@ from .views import *
 # app_name = "main"
 urlpatterns = [
     path("a/",doSomething,name="doSomething"),
-    path("w/<str:thePath>",editFile,name="editfile"),
-    path("e/<str:thePath>",listOfFile,name="listoffile"),
+    # path("w/<str:thePath>",editFile,name="editfile"),
+    path("e/",listOfFile,name="listoffile"),
     path("",listOfFileRoot,name="listoffileroot"),
 ]

@@ -180,18 +180,19 @@ class FileSystem:
 
 
 
-    def addـdir(self,node:DirNode):
+    def add_dir(self,node:DirNode):
         if self.current.depth() >=1 :
             self.parent=self.current
             self.dir_tree.insert(node,self.current)
-            print(f"addـdir {node.name} succ")
+            print(f"add_dir {node.name} succ")
 
         else:
-            print(f"addـdir {node.name} NOT succ")
+            self.add_drive(node)
+            print(f"add_dir {node.name} NOT succ, add as driver")
 
     def mkdir(self,name:str):
         tmp=DirNode(name)
-        self.addـdir(tmp)
+        self.add_dir(tmp)
         
 
     def addـfile(self,node:DirNode):
@@ -280,7 +281,11 @@ class FileSystem:
             if i.name==data or data == "*" :
                 index.append(i)
         return index
-
+    def get_children_dict(self):
+        output_dict=dict()
+        for i in self.current.children:
+            output_dict[i.name]=i.type
+        return output_dict
 
 
 
@@ -288,11 +293,14 @@ class FileSystem:
 
 
 ex=FileSystem(100)
-c=DirNode("C",20)
-d=DirNode("D",10)
-ex.add_drive(c)
-ex.add_drive(d)
-# ex.cd(c)
+c=DirNode("C")
+# d=DirNode("D",10)
+ex.add_dir(c)
+# ex.add_drive(d)
+# ex.adddir(download)
+
+ex.cd(c)
+ex.add_dir(c)
 ex.pwd()
 print(ex.get_children_dict())
 """download=DirNode("download")

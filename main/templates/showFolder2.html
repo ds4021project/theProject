@@ -411,9 +411,7 @@
         <div id="main-header">
             <div id="path">
                 {% for k,v in tehCurentPath.items %}
-                <a href="{{v.href}}">
-                    <div>{{k}}</div><i class="fal fa-chevron-right"></i>
-                </a>
+                <div>{{k}}</div><i class="fal fa-chevron-right"></i>
                 {% endfor %}
                 <!-- <div>Files</div><i class="fal fa-chevron-right"></i> -->
                 <!-- <div>Desktop</div> -->
@@ -423,7 +421,7 @@
             <progress class="loading" id="thePr"></progress>
 
             {% for k,v in listOfFiles.items %}
-            <a href="{{v.href}}">
+            <a onclick="{{v.href}}">
                 <div class="file {{v.type}}" oncontextmenu="showContextMenu(event, '{{v.forO}}'); return false;">
                     <span>{{k}}</span>
                     <span></span>
@@ -458,6 +456,19 @@
 
         function refresh(){
             location.reload();
+        }
+        function theJsFunctionCd(x){
+            $.ajax({
+                url: "{{apil}}",
+                type: 'POST',
+                data: { key: "{{currentPathForNew}}", cd:x, mode: "cd" },
+                success: function (response) {
+                    location.reload(true);
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
         }
         function newFolder() {
             let newfolderName = prompt("new folder name ?");
