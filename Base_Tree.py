@@ -135,6 +135,22 @@ class FileSystem:
             str+=i.name+"//"
         print(str[:-2])
         return str[-2]
+    
+    def get_children_dict(self):
+        output_dict=dict()
+        for i in self.current.children:
+            output_dict[i.name]=i.type
+        return output_dict
+    
+    def get_children_list(self):
+        output_list=[]
+        for i in self.current.children:
+            ls=[]
+            ls.append(i.name)
+            ls.append(i.type)
+            output_list.append(ls)
+        return output_list
+
 
 
 
