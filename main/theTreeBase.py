@@ -135,6 +135,22 @@ class FileSystem:
             str+=i.name+"//"
         print(str[:-2])
         return str[-2]
+    
+    def get_children_dict(self):
+        output_dict=dict()
+        for i in self.current.children:
+            output_dict[i.name]=i.type
+        return output_dict
+    
+    def get_children_list(self):
+        output_list=[]
+        for i in self.current.children:
+            ls=[]
+            ls.append(i.name)
+            ls.append(i.type)
+            output_list.append(ls)
+        return output_list
+
 
 
 
@@ -267,7 +283,8 @@ class FileSystem:
 
 
 
-"""ex=FileSystem(100)
+
+ex=FileSystem(100)
 c=DirNode("C",20)
 d=DirNode("D",10)
 ex.add_drive(c)
@@ -293,7 +310,7 @@ ex.dir_track[0].disp()
 ex.delete(d)
 ex.cut(txt)
 ex.paste(video)
-ex.dir_track[0].disp()"""
+ex.dir_track[0].disp()
 """
 print(type(ex.dir_tree.nodes[-1]))
 ex.delete(ex.dir_tree.nodes[-1])

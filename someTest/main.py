@@ -103,7 +103,7 @@ class Tree:
     def search(self,data:str):  # Search and return Node in Tree
         index=[]
         for i in self.nodes:
-            if i.name==data:
+            if i.name==data or data == "*" :
                 index.append(i)
         return index
 
@@ -121,7 +121,7 @@ class FileSystem:
     """FileSystem class via tree implementation"""
     def __init__(self,FileSystem_size:int):
         self.dir_tree=Tree()
-        self.dir_tree.root=DirNode("this PC",None)
+        self.dir_tree.root=DirNode("This PC",None)
         self.current=self.dir_tree.root
         self.dir_track=[self.dir_tree.root]
         self.FileSystem_size=FileSystem_size
@@ -132,12 +132,25 @@ class FileSystem:
     def pwd(self):
         str=""
         for i in self.dir_track:
-            str+=i.name+"//"
-        print(str[:-2])
-        return str[-2]
+            str+=i.name+"/"
+        print(str[:-1])
+        return str[-1]
 
 
-
+    def get_children_dict(self):
+        output_dict=dict()
+        for i in self.current.children:
+            output_dict[i.name]=i.type
+        return output_dict
+    
+    def get_children_list(self):
+        output_list=[]
+        for i in self.current.children:
+            ls=[]
+            ls.append(i.name)
+            ls.append(i.type)
+            output_list.append(ls)
+        return output_list
 
     def add_drive(self,node:DirNode):
         if self.current.depth() != 1 and self.FileSystem_size >= node.size:
@@ -261,6 +274,13 @@ class FileSystem:
         self.dir_track=[]
         self.dir_track.append(self.dir_tree.root)
 
+    def search(self,data:str):  # Search and return Node in Tree
+        index=[]
+        for i in self.nodes:
+            if i.name==data or data == "*" :
+                index.append(i)
+        return index
+
 
 
 
@@ -272,9 +292,9 @@ c=DirNode("C",20)
 d=DirNode("D",10)
 ex.add_drive(c)
 ex.add_drive(d)
-ex.cd(c)
+# ex.cd(c)
 ex.pwd()
-
+print(ex.get_children_dict())
 """download=DirNode("download")
 video=DirNode("video")
 ex.addـdir(download)

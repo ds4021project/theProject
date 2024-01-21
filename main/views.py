@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .theTreeBase import *
-import sys, shutil, os, imghdr
+import sys, shutil, os, imghdr, pickle
 
 
 theFileExplorerObject = FileSystem(10000000000)
@@ -14,6 +14,19 @@ try :
     os.listdir(theRootPathOfFiles)
 except :
     os.mkdir(theRootPathOfFiles)
+
+thePickleFile = "theFileExplorerBase.pickle"
+def savePickle(obj) :
+    global thePickleFile
+    with open(thePickleFile, 'wb') as handle:
+        pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
+def loadPickle() :
+    global thePickleFile
+    with open(thePickleFile, 'rb') as handle:
+        loadedDictVar = pickle.load(handle)
+        return loadedDictVar
+if(not os.path.exists(thePickleFile)) :
+    savePickle({})
 
 
 def isImage(file_path):
