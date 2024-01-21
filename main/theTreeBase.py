@@ -128,6 +128,8 @@ class FileSystem:
         self.go_forward_arrow_stack=[]
         self.virtual_copy_space=None
         self.is_cuted=False
+        self.inEditMode = False
+        self.editFileName = ""
 
     def pwd(self):
         strer = ""

@@ -190,7 +190,7 @@
 <body translate="no">
     <div class="cont">
         <h2 id="msg" style="text-align: center;"></h2>
-        <a href="{{backUrl}}"><h1 style="text-align: center;">BACK ?</h1></a>
+        <a onclick="{{backUrl}}"><h1 style="text-align: center;">BACK ?</h1></a>
         <h5>{{title}}</h5>
 
         <div id="editor" contenteditable="false">
@@ -286,7 +286,19 @@
                 }
             });
         }
-
+        function doBackUrl(x){
+            $.ajax({
+                url: "{{sf}}",
+                type: 'POST',
+                data: { key: "{{currentPathForNew}}", close:x, mode: "close" },
+                success: function (response) {
+                    location.reload(true);
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
+        }
     </script>
 
 

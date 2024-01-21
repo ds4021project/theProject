@@ -10,10 +10,11 @@ theFileExplorerObject = FileSystem(10000000000)
 
 theRootPathOfFiles = "theFileExplorerBase/"
 theFirstCurrentPath = "This PC"
-try :
-    os.listdir(theRootPathOfFiles)
-except :
-    os.mkdir(theRootPathOfFiles)
+
+# try :
+#     os.listdir(theRootPathOfFiles)
+# except :
+#     os.mkdir(theRootPathOfFiles)
 
 thePickleFile = "theFileExplorerBase.pickle"
 def savePickle() :
@@ -28,7 +29,7 @@ def loadPickle() :
 
 
 if(not os.path.exists(thePickleFile)) :
-    savePickle(FileSystem(10000000))
+    savePickle()
 theFileExplorerObject = loadPickle()
 
 def calCurrentPath() :
@@ -48,6 +49,10 @@ def calCurrentPath() :
                 theDict[cp] = {"href":""}
     return theDict
 def listOfFileRoot(r) :
+    if(theFileExplorerObject.inEditMode == True) :
+        return render(r,"editFile.html",{"fileContent":"CONTECNT","title":"THE PATH","sf":r.build_absolute_uri(reverse("doSomething")),"backUrl":"doBackUrl()"})
+        
+
     # print(theFileExplorerObject.get_children_dict())
     theAllFile = theFileExplorerObject.get_children_dict()
     # print(theAllFile)
@@ -64,11 +69,15 @@ def listOfFileRoot(r) :
     for d in theAllFile :
         # theResult[d] = {"type":"drive","forO":d,"href":reverse("listoffile",args=[d])}
         tmpTyp = theAllFile[d]
+        theJsFunc = f"theJsFunctionCd('{d}')"
         if tmpTyp == "directory" :
             tmpTyp = "folder"
             if len(theCP) == 1 :
                 tmpTyp = "drive"
-        theResult[d] = {"type":tmpTyp,"forO":d,"href":f"theJsFunctionCd('{d}')"}
+        else :
+            tmpTyp = "rawFile"
+            theJsFunc = f"theJsFunctionOpen('{d}')"
+        theResult[d] = {"type":tmpTyp,"forO":d,"href":theJsFunc}
     # print(calCurrentPath())
     # return render(r,"showFolder2.html",{"tehCurentPath":calCurrentPath(),"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(r)})
     return render(r,"showFolder2.html",{"tehCurentPath":theCP,"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":"","showNewFile":showNewFile,"theNameNewFolder":theNameNewFolder})
@@ -83,15 +92,21 @@ def doSomething(r) :
         print(data)
         if data['mode'] == "newFolder" :
             print(theFileExplorerObject.mkdir(data['new']))
-        if data['mode'] == "cd" :
+        elif data['mode'] == "newFile" :
+            print(theFileExplorerObject.mkfile(data['new'],"txt"))
+        elif data['mode'] == "cd" :
             print("=>",data['cd'])
             print(theFileExplorerObject.cd_name(data['cd']))
-        if data["mode"] == "back" :
+        elif data["mode"] == "back" :
             print(theFileExplorerObject.go_backward_arrow())
-        if data["mode"] == "forward" :
+        elif data["mode"] == "forward" :
             print(theFileExplorerObject.go_forward_arrow())
-        if data["mode"] == "up" :
+        elif data["mode"] == "up" :
             print(theFileExplorerObject.go_backward_arrow())
+        elif data["mode"] == "open" :
+            theFileExplorerObject.inEditMode = True
+        elif data["mode"] == "close" :
+            theFileExplorerObject.inEditMode = False
         print("------------------------------------------------------------")
 
         savePickle()

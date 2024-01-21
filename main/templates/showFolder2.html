@@ -485,6 +485,19 @@
                 }
             });
         }
+        function theJsFunctionOpen(x){
+            $.ajax({
+                url: "{{apil}}",
+                type: 'POST',
+                data: { key: "{{currentPathForNew}}", open:x, mode: "open" },
+                success: function (response) {
+                    location.reload(true);
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
+        }
         function newFolder() {
             let newfolderName = prompt("new folder name ?");
             $.ajax({
