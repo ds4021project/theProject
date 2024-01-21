@@ -193,34 +193,34 @@ class FileSystem:
         self.cd(node)
 
 
-    def addـdir(self,node:DirNode):
+    def add_dir(self,node:DirNode):
         if self.current.depth() >=1 :
             self.parent=self.current
             self.dir_tree.insert(node,self.current)
-            print(f"addـdir {node.name} succ")
+            print(f"add_dir {node.name} succ")
 
         else:
-            print(f"addـdir {node.name} NOT succ")
+            print(f"add_dir {node.name} NOT succ")
 
     def mkdir(self,name:str):
         tmp=DirNode(name)
-        self.addـdir(tmp)
+        self.add_dir(tmp)
         
 
 
 
-    def addـfile(self,node:DirNode):
+    def add_file(self,node:DirNode):
         if self.current.depth() >=1 :
             self.parent=self.current
             self.dir_tree.insert(node,self.current)
-            print(f"addـfile {node.name} succ")
+            print(f"add_file {node.name} succ")
 
         else:
-            print(f"addـfile {node.name} NOT succ")
+            print(f"add_file {node.name} NOT succ")
 
     def mkfile(self,name:str,type:str):
         tmp=FileNode(name,type)
-        self.addـfile(tmp)
+        self.add_file(tmp)
 
 
 
@@ -329,8 +329,8 @@ ex.add_drive(d)
 ex.cd(c)
 download=DirNode("download")
 video=DirNode("video")
-ex.addـdir(download)
-ex.addـdir(video)
+ex.add_dir(download)
+ex.add_dir(video)
 ex.cd(download)
 print(ex.current)
 ex.pwd()
@@ -342,7 +342,7 @@ ex.paste(d)
 ex.paste(d)
 ex.paste(d)
 txt=FileNode("hello","txt")
-ex.addـfile(txt)
+ex.add_file(txt)
 ex.dir_track[0].disp()
 ex.delete(d)
 ex.cut(txt)
