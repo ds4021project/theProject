@@ -121,7 +121,7 @@ class FileSystem:
     """FileSystem class via tree implementation"""
     def __init__(self,FileSystem_size:int):
         self.dir_tree=Tree()
-        self.dir_tree.root=DirNode("This PC",None)
+        self.dir_tree.root=DirNode("this PC",None)
         self.current=self.dir_tree.root
         self.dir_track=[self.dir_tree.root]
         self.FileSystem_size=FileSystem_size
@@ -132,9 +132,9 @@ class FileSystem:
     def pwd(self):
         str=""
         for i in self.dir_track:
-            str+=i.name+"/"
-        print(str[:-1])
-        return str[-1]
+            str+=i.name+"//"
+        print(str[:-2])
+        return str[-2]
     
     def get_children_dict(self):
         output_dict=dict()
