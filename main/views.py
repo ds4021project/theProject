@@ -2,8 +2,11 @@ from django.shortcuts import render, HttpResponse
 from django.urls import reverse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
+from .theTreeBase import *
 import sys, shutil, os, imghdr
+
+
+theFileExplorerObject = FileSystem(10000000000)
 
 theRootPathOfFiles = "theFileExplorerBase/"
 theFirstCurrentPath = "This PC"
