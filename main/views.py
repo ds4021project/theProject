@@ -102,7 +102,7 @@ def doSomething(r) :
         elif data["mode"] == "forward" :
             print(theFileExplorerObject.go_forward_arrow())
         elif data["mode"] == "up" :
-            print(theFileExplorerObject.go_backward_arrow())
+            print(theFileExplorerObject.reset_up_arrow())
         elif data["mode"] == "open" :
             theFileExplorerObject.inEditMode = True
         elif data["mode"] == "close" :

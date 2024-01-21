@@ -322,6 +322,8 @@ class FileSystem:
     def reset_up_arrow(self):
         self.dir_track=[]
         self.dir_track.append(self.dir_tree.root)
+        self.current=self.dir_track[-1]
+
 
 
 
