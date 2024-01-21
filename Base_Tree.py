@@ -171,6 +171,12 @@ class FileSystem:
             self.add_drive(tmp)
 
 
+    def name_to_node(self,name:str):
+        for i in self.current.children:
+            if name==i.name:
+                return i
+
+
 
     def cd(self,node:DirNode):
         if node in self.current.children:
@@ -181,6 +187,10 @@ class FileSystem:
         else:
             print(f"cd to {self.current.name} NOT succ")
 
+
+    def cd_name(self,name:str):
+        node=self.name_to_node(name)
+        self.cd(node)
 
 
     def addـdir(self,node:DirNode):
@@ -196,6 +206,8 @@ class FileSystem:
         tmp=DirNode(name)
         self.addـdir(tmp)
         
+
+
 
     def addـfile(self,node:DirNode):
         if self.current.depth() >=1 :
@@ -214,6 +226,12 @@ class FileSystem:
 
     def copy(self,node:TreeNode):
         self.virtual_copy_space=deepcopy(node)
+    
+    def copy_name(self,name:str):
+        node=self.name_to_node(name)
+        self.copy(node)        
+
+
 
 
     def paste(self,destiny_node:TreeNode):
@@ -237,6 +255,14 @@ class FileSystem:
             self.is_cuted=False
 
 
+    def paste_name(self,name:str):
+        node=self.name_to_node(name)
+        self.paste(node)        
+
+
+
+
+
     def delete(self, node: TreeNode):
         if not node.children:
             if node.parent:
@@ -249,12 +275,24 @@ class FileSystem:
                 node.parent.children.remove(node)
             self.dir_tree.nodes.remove(node)
 
+            
+    def delete_name(self,name:str):
+        node=self.name_to_node(name)
+        self.delete(node)        
+
+
+    
+
 
     def cut(self, node: TreeNode):
         self.is_cuted=True
         self.virtual_copy_space=node
         
+    def cut_name(self,name:str):
+        node=self.name_to_node(name)
+        self.cut(node)        
     
+
 
 
     def go_forward_arrow(self):
