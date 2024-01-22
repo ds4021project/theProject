@@ -290,7 +290,13 @@ class FileSystem:
         
     def cut_name(self,name:str):
         node=self.name_to_node(name)
-        self.cut(node)        
+        self.cut(node)     
+
+
+    def rename(self,current_name:str, new_name:str):
+        node=self.name_to_node(current_name)
+        node.name=new_name
+
     
 
 
