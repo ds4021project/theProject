@@ -131,6 +131,7 @@ class FileSystem:
         self.is_cuted=False
         self.inEditMode = False
         self.editFileName = ""
+        self.isInCutOrCopy = False
 
     def pwd(self):
         strer = ""
@@ -343,7 +344,7 @@ class FileSystem:
                 directories = directories[:-1]
             newPaths.append('/'.join(directories))
         return newPaths[1:]
-    def get_all_directory_paths(self):
+    def getAllDirectoryPaths(self):
         paths = []
         visitedNode = []
         def traverse(node, path):
@@ -357,6 +358,9 @@ class FileSystem:
                     self.go_backward_arrow()
         traverse(self.dir_tree.root, [])
         return self.removeDuplicates(["/".join(path) for path in paths])
+    def rename(self,current_name:str, new_name:str):
+        node=self.name_to_node(current_name)
+        node.name=new_name
 
 
 

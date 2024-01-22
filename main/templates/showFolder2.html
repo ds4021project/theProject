@@ -358,6 +358,9 @@
         <!-- <div class="action" id="upload"><i class="fal fa-arrow-to-top"></i> Upload</div> -->
         <!-- <div class="action" id="sort"><i class="fal fa-sort-amount-down"></i> Sort by</div> -->
         <div class="action" id="refresh" onclick="refresh()"><i class="fal fa-sync"></i> Refresh</div>
+        {% if isInCutOrCopy %}
+        <div class="action" id="refresh" onclick="pasteFunc()"><i class="fal fa-paste"></i> Paste</div>
+        {% endif %}
     </div>
     <div id="sidebar">
         <!-- <ul id="file-treeview">
@@ -433,11 +436,14 @@
             <div id="contextMenu"
                 style="visibility: hidden; position: absolute; background-color: #f5f5f5; border: 1px solid #ccc; padding: 10px;">
                 <ul style="list-style: none; padding: 0; margin: 0;">
+                    {% if not isInCutOrCopy %}
                     <li id="option1">Delete</li>
                     <li id="option2">Rename</li>
                     <li id="option3">Copy</li>
                     <li id="option4">Move</li>
-                    <li id="option5">Properties</li>
+                    {% else %}
+                    <li id="cnu">Can't use this menu, only paste</li>
+                    {% endif %}
                 </ul>
             </div>
 
@@ -512,6 +518,19 @@
                 }
             });
         }
+        function pasteFunc(){
+            $.ajax({
+                url: "{{apil}}",
+                type: 'POST',
+                data: { key: "{{currentPathForNew}}", mode: "paste" },
+                success: function (response) {
+                    location.reload(true);
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
+        }
         function newFile() {
             let newfileName = prompt("new file name ?");
             $.ajax({
@@ -545,7 +564,7 @@
         }
         document.getElementById('option1').addEventListener('click', function () {
             // alert('You clicked Option 1 =>' + currentKey);
-            if (confirm("are you sure to delete this ?")) {
+            if (confirm("are you sure to delete "+currentKey+" ?")) {
                 $.ajax({
                     url: "{{apil}}",
                     type: 'POST',
@@ -562,12 +581,28 @@
 
         document.getElementById('option2').addEventListener('click', function () {
             // alert('You clicked Option 2 =>' + currentKey);
-            let userInput = prompt("rename to ?");
+            let userInput = prompt("rename "+currentKey+" to ?");
             if (confirm("rename to " + userInput + " ?")) {
                 $.ajax({
                     url: "{{apil}}",
                     type: 'POST',
                     data: { key: currentKey, to: userInput, mode: "rename" },
+                    success: function (response) {
+                        location.reload(true);
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+            }
+
+        });
+        document.getElementById('option3').addEventListener('click', function () {
+            if (confirm("do you want to copy "+currentKey+" ?")) {
+                $.ajax({
+                    url: "{{apil}}",
+                    type: 'POST',
+                    data: { key: currentKey, mode: "copy" },
                     success: function (response) {
                         location.reload(true);
                     },

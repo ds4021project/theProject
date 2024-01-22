@@ -36,8 +36,8 @@ def getAllDir() :
     theCopyOfEx = deepcopy(theFileExplorerObject)
     theCopyOfEx.reset_up_arrow()
     fileTree = {}
-    print(theCopyOfEx.get_all_directory_paths())
-    for path in theCopyOfEx.get_all_directory_paths() :
+    print(theCopyOfEx.getAllDirectoryPaths())
+    for path in theCopyOfEx.getAllDirectoryPaths() :
         parts = path.split('/')
         node = fileTree
         for part in parts:
@@ -94,7 +94,7 @@ def listOfFileRoot(r) :
     # print(calCurrentPath())
     # return render(r,"showFolder2.html",{"tehCurentPath":calCurrentPath(),"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(r)})
     # getAllDir()
-    return render(r,"showFolder2.html",{"tehCurentPath":theCP,"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(),"showNewFile":showNewFile,"theNameNewFolder":theNameNewFolder})
+    return render(r,"showFolder2.html",{"tehCurentPath":theCP,"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(),"showNewFile":showNewFile,"theNameNewFolder":theNameNewFolder,"isInCutOrCopy":theFileExplorerObject.isInCutOrCopy})
 
 
 @csrf_exempt
@@ -121,12 +121,24 @@ def doSomething(r) :
             theFileExplorerObject.inEditMode = True
         elif data["mode"] == "close" :
             theFileExplorerObject.inEditMode = False
+        elif data["mode"] == "delete" :
+            theFileExplorerObject.delete_name(data['key'])
+            print("dd",data)
+        elif data["mode"] == "rename" :
+            theFileExplorerObject.rename(data["key"],data["to"])
+        elif data["mode"] == "copy" :
+            theFileExplorerObject.isInCutOrCopy = True
+            theFileExplorerObject.copy_name(data["key"])
+        elif data["mode"] == "paste" :
+            theFileExplorerObject.isInCutOrCopy = False
+            theFileExplorerObject.paste()
         print("------------------------------------------------------------")
 
         savePickle()
         return JsonResponse({"CODE":200})
     return JsonResponse({"CODE":400})
 
+#when delete somthing can access it with forward arrow
 
 
 """def getfileContent(path) :
