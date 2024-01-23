@@ -234,16 +234,16 @@ class FileSystem:
 
 
 
-    def paste(self,destiny_node:TreeNode):
+    def paste(self):
         if self.is_cuted==False:
-            if self.virtual_copy_space is not None and self.virtual_copy_space not in destiny_node.children:
-                self.dir_tree.insert(self.virtual_copy_space,destiny_node)
+            if self.virtual_copy_space is not None and self.virtual_copy_space not in self.current.children:
+                self.dir_tree.insert(self.virtual_copy_space,self.current)
 
 
-            elif self.virtual_copy_space in destiny_node.children:
+            elif self.virtual_copy_space in self.current.children:
                 self.virtual_copy_space=deepcopy(self.virtual_copy_space)
                 self.virtual_copy_space.name+=" copy"
-                self.dir_tree.insert(self.virtual_copy_space,destiny_node)
+                self.dir_tree.insert(self.virtual_copy_space,self.current)
 
             else :
                 print("unvalid paste")
@@ -251,13 +251,9 @@ class FileSystem:
                 
         else:   # cut
             self.virtual_copy_space.parent.children.remove(self.virtual_copy_space)
-            destiny_node.add_child(self.virtual_copy_space)
+            self.current.add_child(self.virtual_copy_space)
             self.is_cuted=False
 
-
-    def paste_name(self,name:str):
-        node=self.name_to_node(name)
-        self.paste(node)        
 
 
 
@@ -345,15 +341,15 @@ ex.pwd()
 ex.dir_track[0].disp()
 
 ex.copy(download)
-ex.paste(d)
-ex.paste(d)
-ex.paste(d)
+ex.paste()
+ex.paste()
+ex.paste()
 txt=FileNode("hello","txt")
 ex.add_file(txt)
 ex.dir_track[0].disp()
 ex.delete(d)
 ex.cut(txt)
-ex.paste(video)
+ex.paste()
 ex.dir_track[0].disp()
 """
 print(type(ex.dir_tree.nodes[-1]))
