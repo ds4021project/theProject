@@ -264,12 +264,16 @@ class FileSystem:
             if node.parent:
                 node.parent.children.remove(node)
             self.dir_tree.nodes.remove(node)
+
         else:
             for child in node.children.copy():
                 self.delete(child)
             if node.parent:
                 node.parent.children.remove(node)
             self.dir_tree.nodes.remove(node)
+            if node in self.go_forward_arrow_stack:     
+                self.go_forward_arrow_stack.remove(node)
+
 
             
     def delete_name(self,name:str):
@@ -298,7 +302,7 @@ class FileSystem:
 
 
     def go_forward_arrow(self):
-        if len(self.dir_track) >=1:
+        if len(self.dir_track) >=2:
             self.dir_track.append(self.go_forward_arrow_stack.pop())
             self.current=self.dir_track[-1]
         else:
@@ -326,6 +330,8 @@ class FileSystem:
 
 ex=FileSystem(100)
 c=DirNode("C",20)
+
+
 d=DirNode("D",10)
 ex.add_drive(c)
 ex.add_drive(d)
@@ -350,6 +356,13 @@ ex.dir_track[0].disp()
 ex.delete(d)
 ex.cut(txt)
 ex.paste()
+ex.dir_track[0].disp()
+
+ex.go_backward_arrow()
+ex.go_backward_arrow()
+ex.pwd()
+ex.delete_name("C")
+ex.go_forward_arrow()
 ex.dir_track[0].disp()
 """
 print(type(ex.dir_tree.nodes[-1]))
