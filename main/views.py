@@ -7,34 +7,159 @@ import sys, shutil, os, imghdr, pickle
 
 
 theFileExplorerObject = FileSystem(10000000000)
+ 
 
 theRootPathOfFiles = "theFileExplorerBase/"
 theFirstCurrentPath = "This PC"
-try :
-    os.listdir(theRootPathOfFiles)
-except :
-    os.mkdir(theRootPathOfFiles)
+
+# try :
+#     os.listdir(theRootPathOfFiles)
+# except :
+#     os.mkdir(theRootPathOfFiles)
 
 thePickleFile = "theFileExplorerBase.pickle"
-def savePickle(obj) :
-    global thePickleFile
+def savePickle() :
+    global thePickleFile, theFileExplorerObject
     with open(thePickleFile, 'wb') as handle:
-        pickle.dump(obj, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(theFileExplorerObject, handle, protocol=pickle.HIGHEST_PROTOCOL)
 def loadPickle() :
     global thePickleFile
     with open(thePickleFile, 'rb') as handle:
         loadedDictVar = pickle.load(handle)
         return loadedDictVar
+
+# if(not os.path.exists(thePickleFile)) :
+#     savePickle()
+#     theFileExplorerObject = loadPickle()
+#     theFileExplorerObject.theFirstRun = True
+# else :
+#     theFileExplorerObject = loadPickle()
 if(not os.path.exists(thePickleFile)) :
-    savePickle({})
+    savePickle()
+theFileExplorerObject = loadPickle()
+
+def getAllDir() :
+    theCopyOfEx = deepcopy(theFileExplorerObject)
+    theCopyOfEx.reset_up_arrow()
+    fileTree = {}
+    print(theCopyOfEx.getAllDirectoryPaths(),"= "*20)
+    for path in theCopyOfEx.getAllDirectoryPaths() :
+        parts = path.split('/')
+        node = fileTree
+        for part in parts:
+            node = node.setdefault(f"{part}", {})
+    print(fileTree)
+    return fileTree
+
+def calCurrentPath() :
+    theDict = {}
+    # print(theFileExplorerObject.pwd(),"****************************")
+    currentPath = theFileExplorerObject.pwd()
+    print("- "*10,currentPath)
+    currentPath[0] = theFirstCurrentPath
+    theBackPath = ""
+    for cp in currentPath :
+        if cp :
+            if cp == theFirstCurrentPath :
+                theDict[cp] = {"href":reverse("listoffileroot")}
+            else :
+                theBackPath += f",{cp}"
+                # theDict[cp] = {"href":reverse("listoffile",args=[theBackPath.replace(",","",1)])}
+                theDict[cp] = {"href":""}
+    return theDict
+def listOfFileRoot(r) :
+    global theFileExplorerObject
+    if(theFileExplorerObject.inEditMode == True) :
+        return render(r,"editFile.html",{"fileContent":"CONTECNT","title":"THE PATH","sf":r.build_absolute_uri(reverse("doSomething")),"backUrl":"doBackUrl()"})
+        
+
+    # print(theFileExplorerObject.get_children_dict())
+    theAllFile = theFileExplorerObject.get_children_dict()
+    # print(theAllFile)
+    theResult = {}
+    print(theAllFile)
+    # weInRoot = theFileExplorerObject.inRoot()
+    theCP = calCurrentPath()
+    showNewFile = True
+    theNameNewFolder = "folder"
+    if len(theCP) == 1 :
+        showNewFile = False
+        theNameNewFolder = "drive"
+        
+    for d in theAllFile :
+        # theResult[d] = {"type":"drive","forO":d,"href":reverse("listoffile",args=[d])}
+        tmpTyp = theAllFile[d]
+        theJsFunc = f"theJsFunctionCd('{d}')"
+        if tmpTyp == "directory" :
+            tmpTyp = "folder"
+            if len(theCP) == 1 :
+                tmpTyp = "drive"
+        else :
+            tmpTyp = "rawFile"
+            theJsFunc = f"theJsFunctionOpen('{d}')"
+        theResult[d] = {"type":tmpTyp,"forO":d,"href":theJsFunc}
+    # print(calCurrentPath())
+    # return render(r,"showFolder2.html",{"tehCurentPath":calCurrentPath(),"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(r)})
+    # getAllDir()
+    print("=> "*10,theFileExplorerObject.theFirstRun)
+    return render(r,"showFolder2.html",{"tehCurentPath":theCP,"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(),"showNewFile":showNewFile,"theNameNewFolder":theNameNewFolder,"isInCutOrCopy":theFileExplorerObject.isInCutOrCopy,"theFirstRun":False})
 
 
-def isImage(file_path):
-    image_types = imghdr.what(file_path)
-    if image_types != None:
-        return True
-    return False
-def getfileContent(path) :
+@csrf_exempt
+def doSomething(r) :
+    global theFileExplorerObject
+    if r.method == "POST" :
+        print("------------------------------------------------------------")
+        data = r.POST
+        print(data)
+        if data['mode'] == "firstRun" :
+            pass
+            # theFileExplorerObject = FileSystem(int(data['size']))
+        if data['mode'] == "newFolder" :
+            print(theFileExplorerObject.mkdir(data['new']))
+        elif data["mode"] == "newDrive" :
+            print(theFileExplorerObject.mkdrive(data['new'],int(data['size'])))
+        elif data['mode'] == "newFile" :
+            print(theFileExplorerObject.mkfile(data['new'],"txt"))
+        elif data['mode'] == "cd" :
+            print("=>",data['cd'])
+            print(theFileExplorerObject.cd_name(data['cd']))
+        elif data["mode"] == "back" :
+            print(theFileExplorerObject.go_backward_arrow())
+        elif data["mode"] == "forward" :
+            print(theFileExplorerObject.go_forward_arrow())
+        elif data["mode"] == "up" :
+            print(theFileExplorerObject.reset_up_arrow())
+        elif data["mode"] == "open" :
+            theFileExplorerObject.inEditMode = True
+        elif data["mode"] == "close" :
+            theFileExplorerObject.inEditMode = False
+        elif data["mode"] == "delete" :
+            theFileExplorerObject.delete_name(data['key'])
+            print("dd",data)
+        elif data["mode"] == "rename" :
+            theFileExplorerObject.rename(data["key"],data["to"])
+        elif data["mode"] == "copy" :
+            theFileExplorerObject.isInCutOrCopy = True
+            theFileExplorerObject.copy_name(data["key"])
+        elif data["mode"] == "cut" :
+            theFileExplorerObject.isInCutOrCopy = True
+            theFileExplorerObject.cut_name(data["key"])
+        elif data["mode"] == "paste" :
+            theFileExplorerObject.isInCutOrCopy = False
+            theFileExplorerObject.paste()
+        elif data["mode"] == "cancelCC" :
+            theFileExplorerObject.isInCutOrCopy = False
+        print("------------------------------------------------------------")
+
+        savePickle()
+        return JsonResponse({"CODE":200})
+    return JsonResponse({"CODE":400})
+
+#when delete somthing can access it with forward arrow
+
+
+"""def getfileContent(path) :
     fullLine = ""
     with open(path, 'r') as file:
         for line in file:
@@ -163,4 +288,4 @@ def doSomething(r) :
 
 
         return JsonResponse({"CODE":200})
-    return JsonResponse({"CODE":400})
+    return JsonResponse({"CODE":400})"""
