@@ -7,6 +7,7 @@ import sys, shutil, os, imghdr, pickle
 
 
 theFileExplorerObject = FileSystem(10000000000)
+ 
 
 theRootPathOfFiles = "theFileExplorerBase/"
 theFirstCurrentPath = "This PC"
@@ -27,7 +28,12 @@ def loadPickle() :
         loadedDictVar = pickle.load(handle)
         return loadedDictVar
 
-
+# if(not os.path.exists(thePickleFile)) :
+#     savePickle()
+#     theFileExplorerObject = loadPickle()
+#     theFileExplorerObject.theFirstRun = True
+# else :
+#     theFileExplorerObject = loadPickle()
 if(not os.path.exists(thePickleFile)) :
     savePickle()
 theFileExplorerObject = loadPickle()
@@ -36,7 +42,7 @@ def getAllDir() :
     theCopyOfEx = deepcopy(theFileExplorerObject)
     theCopyOfEx.reset_up_arrow()
     fileTree = {}
-    print(theCopyOfEx.getAllDirectoryPaths())
+    print(theCopyOfEx.getAllDirectoryPaths(),"= "*20)
     for path in theCopyOfEx.getAllDirectoryPaths() :
         parts = path.split('/')
         node = fileTree
@@ -62,6 +68,7 @@ def calCurrentPath() :
                 theDict[cp] = {"href":""}
     return theDict
 def listOfFileRoot(r) :
+    global theFileExplorerObject
     if(theFileExplorerObject.inEditMode == True) :
         return render(r,"editFile.html",{"fileContent":"CONTECNT","title":"THE PATH","sf":r.build_absolute_uri(reverse("doSomething")),"backUrl":"doBackUrl()"})
         
@@ -94,18 +101,24 @@ def listOfFileRoot(r) :
     # print(calCurrentPath())
     # return render(r,"showFolder2.html",{"tehCurentPath":calCurrentPath(),"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(r)})
     # getAllDir()
-    return render(r,"showFolder2.html",{"tehCurentPath":theCP,"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(),"showNewFile":showNewFile,"theNameNewFolder":theNameNewFolder,"isInCutOrCopy":theFileExplorerObject.isInCutOrCopy})
+    print("=> "*10,theFileExplorerObject.theFirstRun)
+    return render(r,"showFolder2.html",{"tehCurentPath":theCP,"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(),"showNewFile":showNewFile,"theNameNewFolder":theNameNewFolder,"isInCutOrCopy":theFileExplorerObject.isInCutOrCopy,"theFirstRun":False})
 
 
 @csrf_exempt
 def doSomething(r) :
-
+    global theFileExplorerObject
     if r.method == "POST" :
         print("------------------------------------------------------------")
         data = r.POST
         print(data)
+        if data['mode'] == "firstRun" :
+            pass
+            # theFileExplorerObject = FileSystem(int(data['size']))
         if data['mode'] == "newFolder" :
             print(theFileExplorerObject.mkdir(data['new']))
+        elif data["mode"] == "newDrive" :
+            print(theFileExplorerObject.mkdrive(data['new'],int(data['size'])))
         elif data['mode'] == "newFile" :
             print(theFileExplorerObject.mkfile(data['new'],"txt"))
         elif data['mode'] == "cd" :
@@ -129,9 +142,14 @@ def doSomething(r) :
         elif data["mode"] == "copy" :
             theFileExplorerObject.isInCutOrCopy = True
             theFileExplorerObject.copy_name(data["key"])
+        elif data["mode"] == "cut" :
+            theFileExplorerObject.isInCutOrCopy = True
+            theFileExplorerObject.cut_name(data["key"])
         elif data["mode"] == "paste" :
             theFileExplorerObject.isInCutOrCopy = False
             theFileExplorerObject.paste()
+        elif data["mode"] == "cancelCC" :
+            theFileExplorerObject.isInCutOrCopy = False
         print("------------------------------------------------------------")
 
         savePickle()

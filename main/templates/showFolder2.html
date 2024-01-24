@@ -347,11 +347,38 @@
 </head>
 
 <body translate="no">
+    {% if theFirstRun %}
+    <script>
+        let theFileSystemSize = prompt("this is first run, size of file system ?");
+        $.ajax({
+            url: "{{apil}}",
+            type: 'POST',
+            data: { key: "{{currentPathForNew}}", size: theFileSystemSize, mode: "firstRun" },
+            success: function (response) {
+                location.reload(true);
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+    </script>
+    {% endif %}
     <div id="header">
-        <a onclick="arrFunc('back')"><div class="action" id="upload"><i class="fal fa-angle-double-left"></i></div></a>
-        <a onclick="arrFunc('forward')"><div class="action" id="upload"><i class="fal fa-angle-double-right"></i></div></a>
-        <a onclick="arrFunc('up')"><div class="action" id="upload"><i class="fal fa-angle-double-up"></i></div></a>
-        <div class="action" id="newFolder" onclick="newFolder()"><i class="fal fa-folder"></i> New {{theNameNewFolder}}</div>
+        <a onclick="arrFunc('back')">
+            <div class="action" id="upload"><i class="fal fa-angle-double-left"></i></div>
+        </a>
+        <a onclick="arrFunc('forward')">
+            <div class="action" id="upload"><i class="fal fa-angle-double-right"></i></div>
+        </a>
+        <a onclick="arrFunc('up')">
+            <div class="action" id="upload"><i class="fal fa-angle-double-up"></i></div>
+        </a>
+        {% if theNameNewFolder == "drive" %}
+        <div class="action" id="newFolder" onclick="newDrive()"><i class="fal fa-folder"></i> New drive</div>
+        {% else %}
+        <div class="action" id="newFolder" onclick="newFolder()"><i class="fal fa-folder"></i> New {{theNameNewFolder}}
+        </div>
+        {% endif %}
         {% if showNewFile %}
         <div class="action" id="newFile" onclick="newFile()"><i class="fal fa-file"></i> New file</div>
         {% endif %}
@@ -360,6 +387,7 @@
         <div class="action" id="refresh" onclick="refresh()"><i class="fal fa-sync"></i> Refresh</div>
         {% if isInCutOrCopy %}
         <div class="action" id="refresh" onclick="pasteFunc()"><i class="fal fa-paste"></i> Paste</div>
+        <div class="action" id="refresh" onclick="cancelcc()"><i class="fal fa-ban"></i> Cancel Copy/Cut</div>
         {% endif %}
     </div>
     <div id="sidebar">
@@ -407,7 +435,7 @@
         </ul> -->
         <ul id="file-treeview">
             {% for name, children in fileTree.items %}
-                {% include 'fileNode.html' %}
+            {% include 'fileNode.html' %}
             {% endfor %}
         </ul>
     </div>
@@ -440,9 +468,9 @@
                     <li id="option1">Delete</li>
                     <li id="option2">Rename</li>
                     <li id="option3">Copy</li>
-                    <li id="option4">Move</li>
+                    <li id="option4">Cut</li>
                     {% else %}
-                    <li id="cnu">Can't use this menu, only paste</li>
+                    <li id="cnu">Can't use this menu, only paste or cancel</li>
                     {% endif %}
                 </ul>
             </div>
@@ -462,10 +490,10 @@
     <script id="rendered-js">
         var currentKey;
 
-        function refresh(){
+        function refresh() {
             location.reload();
         }
-        function arrFunc(modex){
+        function arrFunc(modex) {
             $.ajax({
                 url: "{{apil}}",
                 type: 'POST',
@@ -478,11 +506,11 @@
                 }
             });
         }
-        function theJsFunctionCd(x){
+        function theJsFunctionCd(x) {
             $.ajax({
                 url: "{{apil}}",
                 type: 'POST',
-                data: { key: "{{currentPathForNew}}", cd:x, mode: "cd" },
+                data: { key: "{{currentPathForNew}}", cd: x, mode: "cd" },
                 success: function (response) {
                     location.reload(true);
                 },
@@ -491,11 +519,11 @@
                 }
             });
         }
-        function theJsFunctionOpen(x){
+        function theJsFunctionOpen(x) {
             $.ajax({
                 url: "{{apil}}",
                 type: 'POST',
-                data: { key: "{{currentPathForNew}}", open:x, mode: "open" },
+                data: { key: "{{currentPathForNew}}", open: x, mode: "open" },
                 success: function (response) {
                     location.reload(true);
                 },
@@ -509,7 +537,7 @@
             $.ajax({
                 url: "{{apil}}",
                 type: 'POST',
-                data: { key: "{{currentPathForNew}}", new:newfolderName, mode: "newFolder" },
+                data: { key: "{{currentPathForNew}}", new: newfolderName, mode: "newFolder" },
                 success: function (response) {
                     location.reload(true);
                 },
@@ -518,11 +546,39 @@
                 }
             });
         }
-        function pasteFunc(){
+        function newDrive() {
+            let newfolderName = prompt("new drive name ?");
+            let fileSize = prompt("size of " + newfolderName + " ?");
+            $.ajax({
+                url: "{{apil}}",
+                type: 'POST',
+                data: { key: "{{currentPathForNew}}", new: newfolderName, size: fileSize, mode: "newDrive" },
+                success: function (response) {
+                    location.reload(true);
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
+        }
+        function pasteFunc() {
             $.ajax({
                 url: "{{apil}}",
                 type: 'POST',
                 data: { key: "{{currentPathForNew}}", mode: "paste" },
+                success: function (response) {
+                    location.reload(true);
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
+        }
+        function cancelcc() {
+            $.ajax({
+                url: "{{apil}}",
+                type: 'POST',
+                data: { key: "{{currentPathForNew}}", mode: "cancelCC" },
                 success: function (response) {
                     location.reload(true);
                 },
@@ -536,7 +592,7 @@
             $.ajax({
                 url: "{{apil}}",
                 type: 'POST',
-                data: { key: "{{currentPathForNew}}", new:newfileName, mode: "newFile" },
+                data: { key: "{{currentPathForNew}}", new: newfileName, mode: "newFile" },
                 success: function (response) {
                     location.reload(true);
                 },
@@ -564,7 +620,7 @@
         }
         document.getElementById('option1').addEventListener('click', function () {
             // alert('You clicked Option 1 =>' + currentKey);
-            if (confirm("are you sure to delete "+currentKey+" ?")) {
+            if (confirm("are you sure to delete " + currentKey + " ?")) {
                 $.ajax({
                     url: "{{apil}}",
                     type: 'POST',
@@ -581,7 +637,7 @@
 
         document.getElementById('option2').addEventListener('click', function () {
             // alert('You clicked Option 2 =>' + currentKey);
-            let userInput = prompt("rename "+currentKey+" to ?");
+            let userInput = prompt("rename " + currentKey + " to ?");
             if (confirm("rename to " + userInput + " ?")) {
                 $.ajax({
                     url: "{{apil}}",
@@ -598,11 +654,27 @@
 
         });
         document.getElementById('option3').addEventListener('click', function () {
-            if (confirm("do you want to copy "+currentKey+" ?")) {
+            if (confirm("do you want to copy " + currentKey + " ?")) {
                 $.ajax({
                     url: "{{apil}}",
                     type: 'POST',
                     data: { key: currentKey, mode: "copy" },
+                    success: function (response) {
+                        location.reload(true);
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+            }
+
+        });
+        document.getElementById('option4').addEventListener('click', function () {
+            if (confirm("do you want to cut " + currentKey + " ?")) {
+                $.ajax({
+                    url: "{{apil}}",
+                    type: 'POST',
+                    data: { key: currentKey, mode: "cut" },
                     success: function (response) {
                         location.reload(true);
                     },

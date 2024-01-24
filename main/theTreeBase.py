@@ -132,6 +132,7 @@ class FileSystem:
         self.inEditMode = False
         self.editFileName = ""
         self.isInCutOrCopy = False
+        self.theFirstRun = False
 
     def pwd(self):
         strer = ""
@@ -250,16 +251,16 @@ class FileSystem:
 
 
 
-    def paste(self,destiny_node:TreeNode):
+    def paste(self):
         if self.is_cuted==False:
-            if self.virtual_copy_space is not None and self.virtual_copy_space not in destiny_node.children:
-                self.dir_tree.insert(self.virtual_copy_space,destiny_node)
+            if self.virtual_copy_space is not None and self.virtual_copy_space not in self.current.children:
+                self.dir_tree.insert(self.virtual_copy_space,self.current)
 
 
-            elif self.virtual_copy_space in destiny_node.children:
+            elif self.virtual_copy_space in self.current.children:
                 self.virtual_copy_space=deepcopy(self.virtual_copy_space)
                 self.virtual_copy_space.name+=" copy"
-                self.dir_tree.insert(self.virtual_copy_space,destiny_node)
+                self.dir_tree.insert(self.virtual_copy_space,self.current)
 
             else :
                 print("unvalid paste")
@@ -267,15 +268,8 @@ class FileSystem:
                 
         else:   # cut
             self.virtual_copy_space.parent.children.remove(self.virtual_copy_space)
-            destiny_node.add_child(self.virtual_copy_space)
+            self.current.add_child(self.virtual_copy_space)
             self.is_cuted=False
-
-
-    def paste_name(self,name:str):
-        node=self.name_to_node(name)
-        self.paste(node)        
-
-
 
 
 
@@ -290,6 +284,10 @@ class FileSystem:
             if node.parent:
                 node.parent.children.remove(node)
             self.dir_tree.nodes.remove(node)
+            if node in self.go_forward_arrow_stack:     
+                self.go_forward_arrow_stack.remove(node)
+            if node in self.go_forward_arrow_stack:     
+                self.go_forward_arrow_stack.remove(node)
 
             
     def delete_name(self,name:str):
@@ -341,9 +339,10 @@ class FileSystem:
         for path in newPathsN:
             directories = path.split('/')
             if len(directories) > 1 and directories[-1] == directories[-2]:
+                print(directories)
                 directories = directories[:-1]
             newPaths.append('/'.join(directories))
-        return newPaths[1:]
+        return newPaths
     def getAllDirectoryPaths(self):
         paths = []
         visitedNode = []
