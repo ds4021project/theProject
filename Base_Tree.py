@@ -225,7 +225,7 @@ class FileSystem:
 
 
     def copy(self,node:TreeNode):
-        self.virtual_copy_space=deepcopy(node)
+        self.virtual_copy_space=node
     
     def copy_name(self,name:str):
         node=self.name_to_node(name)
@@ -234,27 +234,33 @@ class FileSystem:
 
 
 
-    def paste(self):
-        if self.is_cuted==False:
-            if self.virtual_copy_space is not None and self.virtual_copy_space not in self.current.children:
-                self.dir_tree.insert(self.virtual_copy_space,self.current)
 
+    def paste(self):
+        if not self.is_cuted:
+            if self.virtual_copy_space is not None and self.virtual_copy_space not in self.current.children:
+                self.virtual_copy_space = deepcopy(self.virtual_copy_space)
+                self.dir_tree.insert(self.virtual_copy_space, self.current)
 
             elif self.virtual_copy_space in self.current.children:
-                self.virtual_copy_space=deepcopy(self.virtual_copy_space)
-                self.virtual_copy_space.name+=" copy"
-                self.dir_tree.insert(self.virtual_copy_space,self.current)
+                base_name = self.virtual_copy_space.name
+                repeat = 1
+                while any(base_name in child.name for child in self.current.children):
+                    base_name = base_name.split()[0] + f" copy ({repeat})"
+                    repeat += 1
 
-            else :
-                print("unvalid paste")
-                #self.virtual_copy_space=None
-                
-        else:   # cut
+                self.virtual_copy_space = deepcopy(self.virtual_copy_space)
+                self.virtual_copy_space.name = base_name
+                self.dir_tree.insert(self.virtual_copy_space, self.current)
+
+            else:
+                print("invalid paste")
+                # self.virtual_copy_space = None
+
+        else:  # cut
             self.virtual_copy_space.parent.children.remove(self.virtual_copy_space)
             self.current.add_child(self.virtual_copy_space)
-            self.is_cuted=False
-
-
+            self.is_cuted = False
+            print("cut")
 
 
 
@@ -263,17 +269,21 @@ class FileSystem:
         if not node.children:
             if node.parent:
                 node.parent.children.remove(node)
+                if node in self.go_forward_arrow_stack:
+                    self.go_forward_arrow_stack.remove(node)
+                if node in self.dir_track:
+                    self.dir_track.remove(node)
             self.dir_tree.nodes.remove(node)
-
         else:
             for child in node.children.copy():
                 self.delete(child)
             if node.parent:
                 node.parent.children.remove(node)
+                if node in self.go_forward_arrow_stack:
+                    self.go_forward_arrow_stack.remove(node)
+                if node in self.dir_track:
+                    self.dir_track.remove(node)
             self.dir_tree.nodes.remove(node)
-            if node in self.go_forward_arrow_stack:     
-                self.go_forward_arrow_stack.remove(node)
-
 
             
     def delete_name(self,name:str):
@@ -323,11 +333,37 @@ class FileSystem:
         self.current=self.dir_track[-1]
 
 
+ex=FileSystem(100)
+ex.mkdrive("C",10)
+ex.mkdrive("D",10)
 
+ex.cd_name("D")
+ex.mkdir("video")
+ex.mkdir("download")
+ex.mkdir("hello")
 
+ex.copy_name("video")
+ex.paste()
 
+ex.paste()
 
+ex.copy_name("video")
+ex.paste()
+ex.copy_name("video")
+ex.paste()
+ex.paste()
+ex.dir_track[0].disp()
 
+ex.cd_name("video")
+
+ex.go_backward_arrow()
+ex.go_backward_arrow()
+ex.pwd()
+ex.delete_name("D")
+ex.go_forward_arrow()
+ex.go_forward_arrow()
+ex.dir_track[0].disp()
+"""
 ex=FileSystem(100)
 c=DirNode("C",20)
 
@@ -361,10 +397,13 @@ ex.dir_track[0].disp()
 ex.go_backward_arrow()
 ex.go_backward_arrow()
 ex.pwd()
-ex.delete_name("C")
+#ex.delete_name("C")
 ex.go_forward_arrow()
 ex.dir_track[0].disp()
-"""
+ex.pwd()
+ex.go_forward_arrow()
+ex.go_forward_arrow()
+
 print(type(ex.dir_tree.nodes[-1]))
 ex.delete(ex.dir_tree.nodes[-1])
 
