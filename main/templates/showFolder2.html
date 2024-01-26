@@ -347,9 +347,13 @@
 </head>
 
 <body translate="no">
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
     {% if theFirstRun %}
     <script>
-        let theFileSystemSize = prompt("this is first run, size of file system ?");
+        var theFileSystemSize = prompt("this is first run, size of file system ?");
+        while(theFileSystemSize == null || theFileSystemSize == ""){
+            theFileSystemSize = prompt("you most enter size, this is first run, size of file system ?");
+        }
         $.ajax({
             url: "{{apil}}",
             type: 'POST',
@@ -486,7 +490,6 @@
             </div> -->
         </div>
     </div>
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js'></script>
     <script id="rendered-js">
         var currentKey;
 
