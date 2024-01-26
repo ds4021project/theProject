@@ -28,15 +28,15 @@ def loadPickle() :
         loadedDictVar = pickle.load(handle)
         return loadedDictVar
 
-# if(not os.path.exists(thePickleFile)) :
-#     savePickle()
-#     theFileExplorerObject = loadPickle()
-#     theFileExplorerObject.theFirstRun = True
-# else :
-#     theFileExplorerObject = loadPickle()
 if(not os.path.exists(thePickleFile)) :
     savePickle()
-theFileExplorerObject = loadPickle()
+    theFileExplorerObject = loadPickle()
+    theFileExplorerObject.theFirstRun = True
+else :
+    theFileExplorerObject = loadPickle()
+"""if(not os.path.exists(thePickleFile)) :
+    savePickle()
+theFileExplorerObject = loadPickle()"""
 
 def getAllDir() :
     theCopyOfEx = deepcopy(theFileExplorerObject)
@@ -102,7 +102,7 @@ def listOfFileRoot(r) :
     # return render(r,"showFolder2.html",{"tehCurentPath":calCurrentPath(),"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(r)})
     # getAllDir()
     print("=> "*10,theFileExplorerObject.theFirstRun)
-    return render(r,"showFolder2.html",{"tehCurentPath":theCP,"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(),"showNewFile":showNewFile,"theNameNewFolder":theNameNewFolder,"isInCutOrCopy":theFileExplorerObject.isInCutOrCopy,"theFirstRun":False})
+    return render(r,"showFolder2.html",{"tehCurentPath":theCP,"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(),"showNewFile":showNewFile,"theNameNewFolder":theNameNewFolder,"isInCutOrCopy":theFileExplorerObject.isInCutOrCopy,"theFirstRun":theFileExplorerObject.theFirstRun})
 
 
 @csrf_exempt
@@ -113,8 +113,9 @@ def doSomething(r) :
         data = r.POST
         print(data)
         if data['mode'] == "firstRun" :
-            pass
-            # theFileExplorerObject = FileSystem(int(data['size']))
+            print("firstRun........... size = ",data['size'])
+            theFileExplorerObject = FileSystem(int(data['size']))
+            savePickle()
         if data['mode'] == "newFolder" :
             print(theFileExplorerObject.mkdir(data['new']))
         elif data["mode"] == "newDrive" :
@@ -156,7 +157,6 @@ def doSomething(r) :
         return JsonResponse({"CODE":200})
     return JsonResponse({"CODE":400})
 
-#when delete somthing can access it with forward arrow
 
 
 """def getfileContent(path) :
