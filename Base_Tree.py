@@ -128,7 +128,7 @@ class FileSystem:
         self.dir_track=[self.dir_tree.root]     # dir_track save our route for This PC
         
         self.FileSystem_size=FileSystem_size     
-        self.__go_forward_arrow_stack=[]      # Used for tracking forward_arrow
+        self.__go_forward_arrow_stack=[]      # Used for tracking backward_arrow
 
         # copy and paste attributes
         self.__virtual_copy_space=None
@@ -225,10 +225,13 @@ class FileSystem:
 
     """
     here paste method can use for both copy and paste methods
+
+    to avoiding multiple reference to a node we used hard copy
     """
 
     def paste(self):
         if not self.__is_cuted: # Happens when we are in copy mode
+            # Paste for first time
             if self.__virtual_copy_space is not None and self.__virtual_copy_space not in self.current.children:
                 copied_node = deepcopy(self.__virtual_copy_space)
                 new_name = copied_node.name
@@ -242,7 +245,7 @@ class FileSystem:
                 copied_node.name = new_name
                 self.dir_tree.insert(copied_node, self.current)
 
-            elif self.__virtual_copy_space in self.current.children:
+            elif self.__virtual_copy_space in self.current.children:    # We have multiple paste
                 copied_node = deepcopy(self.__virtual_copy_space)
                 new_name = copied_node.name
                 count = 1
@@ -259,6 +262,7 @@ class FileSystem:
                 print("Invalid paste: virtual_copy_space is not set.")
 
         else:  # Happens when we are in cut mode
+
             self.__virtual_copy_space.parent.children.remove(self.__virtual_copy_space)
             new_name = self.__virtual_copy_space.name
             count = 1
@@ -274,38 +278,43 @@ class FileSystem:
 
 
 
-
-
+    """
+    Here delete implemented recursively
+    """
 
     def delete(self, node: TreeNode):
-        if not node.children:
+        # Base case
+        if not node.children: # Happens when we are at external Node
             if node.parent:
                 node.parent.children.remove(node)
-                if node in self.__go_forward_arrow_stack:
+                if node in self.__go_forward_arrow_stack:   # Deleting reference in __go_forward_arrow_stack
                     self.__go_forward_arrow_stack.remove(node)
-                if node in self.dir_track:
+                if node in self.dir_track:  # Deleting reference in dir_track
                     self.dir_track.remove(node)
-            self.dir_tree.nodes.remove(node)
-        else:
+            self.dir_tree.nodes.remove(node) # Deleting Node in tree
+
+        # Recursion case
+        else:   # Happens when we are at internal Node
             for child in node.children.copy():
                 self.delete(child)
             if node.parent:
                 node.parent.children.remove(node)
-                if node in self.__go_forward_arrow_stack:
+                if node in self.__go_forward_arrow_stack:   # Deleting reference in __go_forward_arrow_stack
                     self.__go_forward_arrow_stack.remove(node)
-                if node in self.dir_track:
+                if node in self.dir_track:  # Deleting reference in dir_track
                     self.dir_track.remove(node)
-            self.dir_tree.nodes.remove(node)
+            self.dir_tree.nodes.remove(node)    # Deleting Node in tree
 
             
-    def delete_name(self,name:str):
+    def delete_name(self,name:str): # Deleting via name
         node=self.name_to_node(name)
         self.delete(node)        
 
 
+
     
     def cut(self, node: TreeNode):
-        self.__is_cuted=True
+        self.__is_cuted=True    # This attribute tells paste method diffrance between copy and cut
         self.__virtual_copy_space=node
         
     def cut_name(self,name:str):
@@ -314,15 +323,17 @@ class FileSystem:
 
 
 
-    def rename(self,current_name:str, new_name:str):
+    def rename(self,current_name:str, new_name:str):    # Rename a node
         node=self.name_to_node(current_name)
         node.name=new_name
 
     
+
+
     # -------------------------------- Navigation Methods  -------------------------------- #
 
 
-    def cd(self,node:DirNode):
+    def cd(self,node:DirNode):  # Will change directory via Node
         if node in self.current.children:
             self.current=node
             self.dir_track.append(node)
@@ -332,35 +343,40 @@ class FileSystem:
             print(f"cd to {self.current.name} NOT succ")
 
 
-    def cd_name(self,name:str):
-        node=self.name_to_node(name)
-        self.cd(node)
+    def cd_name(self,name:str):# Will change directory via name
+
+        if name =="..":     # Will implement backward navigation
+            self.go_backward_arrow()
+        else:
+            node=self.name_to_node(name)
+            self.cd(node)
 
 
 
 
-    def go_forward_arrow(self):
+    def go_forward_arrow(self): # Navigation to forward
+
         if len(self.dir_track) >=2:
-            self.dir_track.append(self.__go_forward_arrow_stack.pop())
-            self.current=self.dir_track[-1]
+            self.dir_track.append(self.__go_forward_arrow_stack.pop())  # Pop last directory from go_forward_arrow_stack and append it to dir_track
+            self.current=self.dir_track[-1] # Setting current directory
         else:
             print("we are at top")
 
 
-    def go_backward_arrow(self):
+    def go_backward_arrow(self):    # Navigation to backward
         if len(self.dir_track) >=2:
-            self.__go_forward_arrow_stack.append(self.dir_track.pop())
+            self.__go_forward_arrow_stack.append(self.dir_track.pop()) # Push last directory to go_forward_arrow_stack
             self.current=self.dir_track[-1]
         else:
             print("we are at This PC")
 
 
-    def reset_up_arrow(self):
+    def reset_up_arrow(self):   # Navigate us to This PC
         self.dir_track=[]
         self.dir_track.append(self.dir_tree.root)
         self.current=self.dir_track[-1]
 
-
+"""
 ex=FileSystem(100)
 ex.mkdrive("C",10)
 ex.mkdrive("D",10)
@@ -395,7 +411,7 @@ ex.go_forward_arrow()
 print(ex.dir_track)
 ex.delete_name("C")
 ex.dir_track[0].disp()
-"""
+
 ex=FileSystem(100)
 c=DirNode("C",20)
 
