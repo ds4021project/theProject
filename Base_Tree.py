@@ -92,7 +92,7 @@ class Tree:
        self.root=None
        self.nodes=[]
 
-    def insert(self,node:TreeNode,parent:DirNode):   # Insert a node into tree
+    def insert(self,node:TreeNode,parent:DirNode):   # Insert a node into tree set it as root or node
         if parent is not None:
             parent.add_child(node)
         else:
@@ -127,7 +127,7 @@ class FileSystem:
 
         self.dir_track=[self.dir_tree.root]     # dir_track save our route for This PC
         
-        self.FileSystem_size=FileSystem_size     
+        self.FileSystem_size=FileSystem_size   # size of our FileSystem     
         self.__go_forward_arrow_stack=[]      # Used for tracking backward_arrow
 
         # copy and paste attributes
@@ -180,7 +180,7 @@ class FileSystem:
     # -------------------------------- Modifier Methods  -------------------------------- #
 
 
-    def __add_drive(self,node:DirNode):     # Adding drive Node to tree
+    def add_drive(self,node:DirNode):     # Adding drive Node to tree
         if self.current.depth() == 0 and self.FileSystem_size >= node.size:
             self.dir_tree.insert(node,self.current)
             self.FileSystem_size -= node.size
@@ -190,7 +190,7 @@ class FileSystem:
 
     def mkdrive(self,name:str,drive_size:int):      # Create and add drive Node to tree via name
             tmp=DirNode(name,drive_size)
-            self.__add_drive(tmp)
+            self.add_drive(tmp)
 
 
 
@@ -211,9 +211,9 @@ class FileSystem:
     def add_file(self,node:DirNode):        # Adding file Node to tree
         if self.current.depth() >=1 :
             self.dir_tree.insert(node,self.current)
-            print(f"add_file {node.name} succ")
+            print(f"add_file {node.name} was successful")
         else:
-            print(f"add_file {node.name} NOT succ")
+            print(f"add_file {node.name} Failed")
 
     def mkfile(self,name:str,type:str):     # Create and add file Node to tree via name
         tmp=FileNode(name,type)
@@ -352,9 +352,9 @@ class FileSystem:
             self.current=node
             self.dir_track.append(node)
             self.__go_forward_arrow_stack=[]
-            print(f"cd to {self.current.name} succ")
+            print(f"cd to {self.current.name} was successful")
         else:
-            print(f"cd to {self.current.name} NOT succ")
+            print(f"cd to {self.current.name} Failed")
 
 
     def cd_name(self,name:str):# Will change directory via name
