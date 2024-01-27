@@ -134,6 +134,9 @@ class FileSystem:
         self.__virtual_copy_space=None
         self.__is_cuted=False
 
+
+
+
     
     # -------------------------------- Accessor Methods -------------------------------- #
 
@@ -142,6 +145,10 @@ class FileSystem:
             if name==i.name:
                 return i
         return None
+    
+    def show(self): # Show tree in tree view
+        self.dir_tree.root.disp()
+
 
 
     def pwd(self):      # Print working directory
@@ -327,6 +334,13 @@ class FileSystem:
         node=self.name_to_node(current_name)
         node.name=new_name
 
+
+    def save(self):     # Save changes and quit
+        import pickle
+        with open ("FileExplorer.pickle","wb") as data:
+            pickle.dump(self,data)
+        
+
     
 
 
@@ -376,8 +390,24 @@ class FileSystem:
         self.dir_track.append(self.dir_tree.root)
         self.current=self.dir_track[-1]
 
+def start():
+    # load or create Seryalized tree object
+    import os
+    import pickle
+    if os.path.exists("FileExplorer.pickle"):
+        with open ("FileExplorer.pickle","rb") as data:
+            filesystem : FileSystem= pickle.load(data)
+    else:
+        size=int(input("Enter FileSystem size : "))
+        filesystem=FileSystem(size)
+
+    return filesystem
+
+ex=start()
+ex.show()
+
+
 """
-ex=FileSystem(100)
 ex.mkdrive("C",10)
 ex.mkdrive("D",10)
 print(ex.dir_tree.nodes)
@@ -411,6 +441,8 @@ ex.go_forward_arrow()
 print(ex.dir_track)
 ex.delete_name("C")
 ex.dir_track[0].disp()
+ex.show()
+ex.save()
 
 ex=FileSystem(100)
 c=DirNode("C",20)
