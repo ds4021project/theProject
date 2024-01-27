@@ -123,11 +123,20 @@ class FileSystem:
         self.dir_tree=Tree()
         self.dir_tree.root=DirNode("this PC",None)
         self.current=self.dir_tree.root
-        self.dir_track=[self.dir_tree.root]
+        self.dir_track=[]
+        self.dir_track.append(self.dir_tree.root)
         self.FileSystem_size=FileSystem_size
         self.go_forward_arrow_stack=[]
         self.virtual_copy_space=None
         self.is_cuted=False
+
+    
+    def name_to_node(self,name:str):
+        for i in self.current.children:
+            if name==i.name:
+                return i
+
+
 
     def pwd(self):
         str=""
@@ -156,46 +165,22 @@ class FileSystem:
 
 
     def add_drive(self,node:DirNode):
-        if self.current.depth() != 1 and self.FileSystem_size >= node.size:
-            node.parent=self.current
+        if self.current.depth() == 0 and self.FileSystem_size >= node.size:
             self.dir_tree.insert(node,self.current)
             self.FileSystem_size -= node.size
             print(f"drive {node.name} created succ")
         else:
             print(f"drive NOT {node.name} created")
 
-
-
     def mkdrive(self,name:str,drive_size:int):
             tmp=DirNode(name,drive_size)
             self.add_drive(tmp)
 
 
-    def name_to_node(self,name:str):
-        for i in self.current.children:
-            if name==i.name:
-                return i
-
-
-
-    def cd(self,node:DirNode):
-        if node in self.current.children:
-            self.current=node
-            self.dir_track.append(node)
-            self.go_forward_arrow_stack=[]
-            print(f"cd to {self.current.name} succ")
-        else:
-            print(f"cd to {self.current.name} NOT succ")
-
-
-    def cd_name(self,name:str):
-        node=self.name_to_node(name)
-        self.cd(node)
 
 
     def add_dir(self,node:DirNode):
         if self.current.depth() >=1 :
-            self.parent=self.current
             self.dir_tree.insert(node,self.current)
             print(f"add_dir {node.name} succ")
 
@@ -211,16 +196,17 @@ class FileSystem:
 
     def add_file(self,node:DirNode):
         if self.current.depth() >=1 :
-            self.parent=self.current
             self.dir_tree.insert(node,self.current)
             print(f"add_file {node.name} succ")
-
         else:
             print(f"add_file {node.name} NOT succ")
 
     def mkfile(self,name:str,type:str):
         tmp=FileNode(name,type)
         self.add_file(tmp)
+
+
+
 
 
 
@@ -238,29 +224,49 @@ class FileSystem:
     def paste(self):
         if not self.is_cuted:
             if self.virtual_copy_space is not None and self.virtual_copy_space not in self.current.children:
-                self.virtual_copy_space = deepcopy(self.virtual_copy_space)
-                self.dir_tree.insert(self.virtual_copy_space, self.current)
+                copied_node = deepcopy(self.virtual_copy_space)
+                new_name = copied_node.name
+                count = 1
+
+                # Add a suffix if the node with the same name already exists
+                while self.name_to_node(new_name) is not None:
+                    new_name = f"{copied_node.name}_{count}"
+                    count += 1
+
+                copied_node.name = new_name
+                self.dir_tree.insert(copied_node, self.current)
 
             elif self.virtual_copy_space in self.current.children:
-                base_name = self.virtual_copy_space.name
-                repeat = 1
-                while any(base_name in child.name for child in self.current.children):
-                    base_name = base_name.split()[0] + f" copy ({repeat})"
-                    repeat += 1
+                copied_node = deepcopy(self.virtual_copy_space)
+                new_name = copied_node.name
+                count = 1
 
-                self.virtual_copy_space = deepcopy(self.virtual_copy_space)
-                self.virtual_copy_space.name = base_name
-                self.dir_tree.insert(self.virtual_copy_space, self.current)
+                # Add a suffix if the node with the same name already exists
+                while self.name_to_node(new_name) is not None:
+                    new_name = f"{copied_node.name} ({count})"
+                    count += 1
+
+                copied_node.name = new_name
+                self.dir_tree.insert(copied_node, self.current)
 
             else:
-                print("invalid paste")
-                # self.virtual_copy_space = None
+                print("Invalid paste: virtual_copy_space is not set.")
 
         else:  # cut
             self.virtual_copy_space.parent.children.remove(self.virtual_copy_space)
+            new_name = self.virtual_copy_space.name
+            count = 1
+
+            # Add a suffix if the node with the same name already exists
+            while self.name_to_node(new_name) is not None:
+                new_name = f"{self.virtual_copy_space.name}_{count}"
+                count += 1
+
+            self.virtual_copy_space.name = new_name
             self.current.add_child(self.virtual_copy_space)
             self.is_cuted = False
-            print("cut")
+
+
 
 
 
@@ -292,8 +298,6 @@ class FileSystem:
 
 
     
-
-
     def cut(self, node: TreeNode):
         self.is_cuted=True
         self.virtual_copy_space=node
@@ -303,11 +307,29 @@ class FileSystem:
         self.cut(node)     
 
 
+
     def rename(self,current_name:str, new_name:str):
         node=self.name_to_node(current_name)
         node.name=new_name
 
     
+
+
+
+    def cd(self,node:DirNode):
+        if node in self.current.children:
+            self.current=node
+            self.dir_track.append(node)
+            self.go_forward_arrow_stack=[]
+            print(f"cd to {self.current.name} succ")
+        else:
+            print(f"cd to {self.current.name} NOT succ")
+
+
+    def cd_name(self,name:str):
+        node=self.name_to_node(name)
+        self.cd(node)
+
 
 
 
@@ -336,11 +358,12 @@ class FileSystem:
 ex=FileSystem(100)
 ex.mkdrive("C",10)
 ex.mkdrive("D",10)
-
+print(ex.dir_tree.nodes)
 ex.cd_name("D")
 ex.mkdir("video")
 ex.mkdir("download")
 ex.mkdir("hello")
+
 
 ex.copy_name("video")
 ex.paste()
@@ -363,6 +386,7 @@ ex.delete_name("D")
 ex.go_forward_arrow()
 ex.go_forward_arrow()
 ex.dir_track[0].disp()
+print(ex.dir_track)
 """
 ex=FileSystem(100)
 c=DirNode("C",20)
