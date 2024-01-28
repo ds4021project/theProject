@@ -22,7 +22,7 @@ class TreeNode(ABC):
 
 
 class DirNode(TreeNode):
-    "Node of a Tree"
+    "Node of a Tree as directory"
     def __init__(self, name:str,size=0,type="directory"):
         self.name = name
         self.parent=None
@@ -58,18 +58,17 @@ class DirNode(TreeNode):
         assert isinstance(node, TreeNode)
         self.children.append(node)
 
-    def disp(self):
+    def disp(self):     #implemented via pptree package
         pptree.print_tree(self,'children','name'+' type')
 
 
 class FileNode(TreeNode):
-    "Node of a Tree"
+    "Node of a Tree as file"
     def __init__(self, name:str,type:str):
         self.name = name
         self.parent=None
         self.children = []
         self.type=type
-        self.elemnt = ""
 
 
     def __repr__(self):
@@ -87,13 +86,13 @@ class FileNode(TreeNode):
 
 class Tree:
     """
-    Tree implemenation as a collection of DirNode objects
+    Tree implemenation as a collection of DirNode and FileNode objects
     """
     def __init__(self):
        self.root=None
        self.nodes=[]
 
-    def insert(self,node:TreeNode,parent:DirNode):   # Insert a node into tree
+    def insert(self,node:TreeNode,parent:DirNode):   # Insert a node into tree set it as root or node
         if parent is not None:
             parent.add_child(node)
         else:
@@ -115,24 +114,47 @@ class Tree:
                 index.append(i)
         return index
 
-    def root(self):
-        return self.root
+
     
 class FileSystem:
     """FileSystem class via tree implementation"""
     def __init__(self,FileSystem_size:int):
+
+        # initializing General tree
         self.dir_tree=Tree()
-        self.dir_tree.root=DirNode("This PC",None)
+        self.dir_tree.root=DirNode("this PC",None)
         self.current=self.dir_tree.root
-        self.dir_track=[self.dir_tree.root]
-        self.FileSystem_size=FileSystem_size
-        self.go_forward_arrow_stack=[]
-        self.virtual_copy_space=None
-        self.is_cuted=False
+
+        self.dir_track=[self.dir_tree.root]     # dir_track save our route for This PC
+        
+        self.FileSystem_size=FileSystem_size   # size of our FileSystem     
+        self.__go_forward_arrow_stack=[]      # Used for tracking backward_arrow
+
+        # copy and paste attributes
+        self.__virtual_copy_space=None
+        self.__is_cuted=False
         self.inEditMode = False
         self.editFileName = ""
         self.isInCutOrCopy = False
         self.theFirstRun = False
+
+
+
+
+
+    
+    # -------------------------------- Accessor Methods -------------------------------- #
+
+    def name_to_node(self,name:str):    # Convert name to NOde in current directory
+        for i in self.current.children:
+            if name==i.name:
+                return i
+        return None
+    
+    def show(self): # Show tree in tree view
+        self.dir_tree.root.disp()
+
+
 
     def pwd(self):
         strer = ""
@@ -146,13 +168,15 @@ class FileSystem:
         print(theL)
         return theL
     
-    def get_children_dict(self):
+    
+    def get_children_dict(self):    # Return Node children in dict 
         output_dict=dict()
         for i in self.current.children:
             output_dict[i.name]=i.type
         return output_dict
     
-    def get_children_list(self):
+    
+    def get_children_list(self):    # Return Node children in list 
         output_list=[]
         for i in self.current.children:
             ls=[]
@@ -160,6 +184,7 @@ class FileSystem:
             ls.append(i.type)
             output_list.append(ls)
         return output_list
+    
     def getOnlyDirNode(self) :
         output_list=[]
         for i in self.current.children:
@@ -168,179 +193,194 @@ class FileSystem:
         return output_list
 
 
+    # -------------------------------- Modifier Methods  -------------------------------- #
 
 
-
-    def add_drive(self,node:DirNode):
-        if self.current.depth() != 1 and self.FileSystem_size >= node.size:
-            node.parent=self.current
+    def add_drive(self,node:DirNode):     # Adding drive Node to tree
+        if self.current.depth() == 0 and self.FileSystem_size >= node.size:
             self.dir_tree.insert(node,self.current)
             self.FileSystem_size -= node.size
-            print(f"drive {node.name} created succ")
+            print(f"drive {node.name} created successfully")
         else:
-            print(f"drive NOT {node.name} created")
+            print(f"drive {node.name} creation Failed")
 
-
-
-    def mkdrive(self,name:str,drive_size:int):
+    def mkdrive(self,name:str,drive_size:int):      # Create and add drive Node to tree via name
             tmp=DirNode(name,drive_size)
             self.add_drive(tmp)
 
 
-    def name_to_node(self,name:str):
-        for i in self.current.children:
-            if name==i.name:
-                return i
 
 
-
-    def cd(self,node:DirNode):
-        if node in self.current.children:
-            self.current=node
-            self.dir_track.append(node)
-            self.go_forward_arrow_stack=[]
-            print(f"cd to {self.current.name} succ")
-        else:
-            print(f"cd to {self.current.name} NOT succ")
-
-
-    def cd_name(self,name:str):
-        node=self.name_to_node(name)
-        self.cd(node)
-
-
-    def add_dir(self,node:DirNode):
+    def add_dir(self,node:DirNode):     # Adding directory Node to tree
         if self.current.depth() >=1 :
-            self.parent=self.current
             self.dir_tree.insert(node,self.current)
-            print(f"add_dir {node.name} succ")
-
+            print(f"add_dir {node.name} was successful ")
         else:
-            self.add_drive(node)
-            print(f"add_dir {node.name} NOT succ, add dirver")
+            print(f"add_dir {node.name} Failed")
 
-    def mkdir(self,name:str):
+    def mkdir(self,name:str):       # Create and add directory Node to tree via name
         tmp=DirNode(name)
         self.add_dir(tmp)
         
 
 
-
-    def add_file(self,node:DirNode):
+    def add_file(self,node:DirNode):        # Adding file Node to tree
         if self.current.depth() >=1 :
-            self.parent=self.current
             self.dir_tree.insert(node,self.current)
-            print(f"add_file {node.name} succ")
-
+            print(f"add_file {node.name} was successful")
         else:
-            print(f"add_file {node.name} NOT succ")
+            print(f"add_file {node.name} Failed")
 
-    def mkfile(self,name:str,type:str):
+    def mkfile(self,name:str,type:str):     # Create and add file Node to tree via name
         tmp=FileNode(name,type)
         self.add_file(tmp)
 
 
 
-    def copy(self,node:TreeNode):
-        self.virtual_copy_space=deepcopy(node)
+
+    def copy(self,node:TreeNode):   # Add TreeNode to virtual_copy_space
+        self.__virtual_copy_space=node
     
-    def copy_name(self,name:str):
+    def copy_name(self,name:str):   # Add TreeNode to virtual_copy_space via name
         node=self.name_to_node(name)
         self.copy(node)        
 
 
+    """
+    here paste method can use for both copy and paste methods
 
+    to avoiding multiple reference to a node we used hard copy
+    """
 
     def paste(self):
-        if not self.is_cuted:
-            if self.virtual_copy_space is not None and self.virtual_copy_space not in self.current.children:
-                self.virtual_copy_space = deepcopy(self.virtual_copy_space)
-                self.dir_tree.insert(self.virtual_copy_space, self.current)
+        if not self.__is_cuted: # Happens when we are in copy mode
+            # Paste for first time
+            if self.__virtual_copy_space is not None and self.__virtual_copy_space not in self.current.children:
+                copied_node = deepcopy(self.__virtual_copy_space)
+                new_name = copied_node.name
+                count = 1
 
-            elif self.virtual_copy_space in self.current.children:
-                base_name = self.virtual_copy_space.name
-                repeat = 1
-                while any(base_name in child.name for child in self.current.children):
-                    base_name = base_name.split()[0] + f" copy ({repeat})"
-                    repeat += 1
+                # Add a suffix if the node with the same name already exists
+                while self.name_to_node(new_name) is not None:
+                    new_name = f"{copied_node.name} ({count})"
+                    count += 1
 
-                self.virtual_copy_space = deepcopy(self.virtual_copy_space)
-                self.virtual_copy_space.name = base_name
-                self.dir_tree.insert(self.virtual_copy_space, self.current)
+                copied_node.name = new_name
+                self.dir_tree.insert(copied_node, self.current)
+
+            elif self.__virtual_copy_space in self.current.children:    # We have multiple paste
+                copied_node = deepcopy(self.__virtual_copy_space)
+                new_name = copied_node.name
+                count = 1
+
+                # Add a suffix if the node with the same name already exists
+                while self.name_to_node(new_name) is not None:
+                    new_name = f"{copied_node.name} ({count})"
+                    count += 1
+
+                copied_node.name = new_name
+                self.dir_tree.insert(copied_node, self.current)
 
             else:
-                print("invalid paste")
-                # self.virtual_copy_space = None
+                print("Invalid paste: virtual_copy_space is not set.")
 
-        else:  # cut
-            self.virtual_copy_space.parent.children.remove(self.virtual_copy_space)
-            self.current.add_child(self.virtual_copy_space)
-            self.is_cuted = False
-            print("cut")
+        else:  # Happens when we are in cut mode
+
+            self.__virtual_copy_space.parent.children.remove(self.__virtual_copy_space)
+            new_name = self.__virtual_copy_space.name
+            count = 1
+
+            # Add a suffix if the node with the same name already exists
+            while self.name_to_node(new_name) is not None:
+                new_name = f"{self.__virtual_copy_space.name}_{count}"
+                count += 1
+
+            self.__virtual_copy_space.name = new_name
+            self.current.add_child(self.__virtual_copy_space)
+            self.__is_cuted = False
 
 
+
+    """
+    Here delete implemented recursively
+    """
 
     def delete(self, node: TreeNode):
-        if not node.children:
+        # Base case
+        if not node.children: # Happens when we are at external Node
             if node.parent:
                 node.parent.children.remove(node)
-                if node in self.go_forward_arrow_stack:
-                    self.go_forward_arrow_stack.remove(node)
-                if node in self.dir_track:
+                if node in self.__go_forward_arrow_stack:   # Deleting reference in __go_forward_arrow_stack
+                    self.__go_forward_arrow_stack.remove(node)
+                if node in self.dir_track:  # Deleting reference in dir_track
                     self.dir_track.remove(node)
-            self.dir_tree.nodes.remove(node)
-        else:
+            self.dir_tree.nodes.remove(node) # Deleting Node in tree
+
+        # Recursion case
+        else:   # Happens when we are at internal Node
             for child in node.children.copy():
                 self.delete(child)
             if node.parent:
                 node.parent.children.remove(node)
-                if node in self.go_forward_arrow_stack:
-                    self.go_forward_arrow_stack.remove(node)
-                if node in self.dir_track:
+                if node in self.__go_forward_arrow_stack:   # Deleting reference in __go_forward_arrow_stack
+                    self.__go_forward_arrow_stack.remove(node)
+                if node in self.dir_track:  # Deleting reference in dir_track
                     self.dir_track.remove(node)
-            self.dir_tree.nodes.remove(node)
+            self.dir_tree.nodes.remove(node)    # Deleting Node in tree
 
             
-    def delete_name(self,name:str):
+    def delete_name(self,name:str): # Deleting via name
         node=self.name_to_node(name)
         self.delete(node)        
 
 
+
     
-
-
     def cut(self, node: TreeNode):
-        self.is_cuted=True
-        self.virtual_copy_space=node
+        self.__is_cuted=True    # This attribute tells paste method diffrance between copy and cut
+        self.__virtual_copy_space=node
         
     def cut_name(self,name:str):
         node=self.name_to_node(name)
-        self.cut(node)        
+        self.cut(node)     
+
+
+
+    def rename(self,current_name:str, new_name:str):    # Rename a node
+        node=self.name_to_node(current_name)
+        node.name=new_name
+
+
+    def save(self):     # Save changes and quit
+        import pickle
+        with open ("FileExplorer.pickle","wb") as data:
+            pickle.dump(self,data)
+        
+
     
 
 
+    # -------------------------------- Navigation Methods  -------------------------------- #
 
-    def go_forward_arrow(self):
-        if len(self.dir_track) >=1:
-            self.dir_track.append(self.go_forward_arrow_stack.pop())
-            self.current=self.dir_track[-1]
+
+    def cd(self,node:DirNode):  # Will change directory via Node
+        if node in self.current.children:
+            self.current=node
+            self.dir_track.append(node)
+            self.__go_forward_arrow_stack=[]
+            print(f"cd to {self.current.name} was successful")
         else:
-            print("we are at top")
+            print(f"cd to {self.current.name} Failed")
 
 
-    def go_backward_arrow(self):
-        if len(self.dir_track) >=2:
-            self.go_forward_arrow_stack.append(self.dir_track.pop())
-            self.current=self.dir_track[-1]
+    def cd_name(self,name:str):# Will change directory via name
+
+        if name =="..":     # Will implement backward navigation
+            self.go_backward_arrow()
         else:
-            print("we are at This PC")
-
-
-    def reset_up_arrow(self):
-        self.dir_track=[]
-        self.dir_track.append(self.dir_tree.root)
-        self.current=self.dir_track[-1]
-
+            node=self.name_to_node(name)
+            self.cd(node)
+    
     def removeDuplicates(self,paths):
         newPathsN = []            
         for path in paths :
@@ -372,14 +412,74 @@ class FileSystem:
         node=self.name_to_node(current_name)
         node.name=new_name
 
+    def go_forward_arrow(self): # Navigation to forward
+
+        if len(self.dir_track) >=2:
+            self.dir_track.append(self.__go_forward_arrow_stack.pop())  # Pop last directory from go_forward_arrow_stack and append it to dir_track
+            self.current=self.dir_track[-1] # Setting current directory
+        else:
+            print("we are at top")
 
 
+    def go_backward_arrow(self):    # Navigation to backward
+        if len(self.dir_track) >=2:
+            self.__go_forward_arrow_stack.append(self.dir_track.pop()) # Push last directory to go_forward_arrow_stack
+            self.current=self.dir_track[-1]
+        else:
+            print("we are at This PC")
 
+
+    def reset_up_arrow(self):   # Navigate us to This PC
+        self.dir_track=[]
+        self.dir_track.append(self.dir_tree.root)
+        self.current=self.dir_track[-1]
+
+
+"""ex=start()
+ex.show()"""
 
 
 """
+ex.mkdrive("C",10)
+ex.mkdrive("D",10)
+print(ex.dir_tree.nodes)
+ex.cd_name("D")
+ex.mkdir("video")
+ex.mkdir("download")
+ex.mkdir("hello")
+
+
+ex.copy_name("video")
+ex.paste()
+
+ex.paste()
+
+ex.copy_name("video")
+ex.paste()
+ex.copy_name("video")
+ex.paste()
+ex.paste()
+ex.dir_track[0].disp()
+
+ex.cd_name("video")
+
+ex.go_backward_arrow()
+ex.go_backward_arrow()
+ex.pwd()
+ex.delete_name("D")
+ex.go_forward_arrow()
+ex.go_forward_arrow()
+
+print(ex.dir_track)
+ex.delete_name("C")
+ex.dir_track[0].disp()
+ex.show()
+ex.save()
+
 ex=FileSystem(100)
 c=DirNode("C",20)
+
+
 d=DirNode("D",10)
 ex.add_drive(c)
 ex.add_drive(d)
@@ -395,16 +495,26 @@ ex.pwd()
 ex.dir_track[0].disp()
 
 ex.copy(download)
-ex.paste(d)
-ex.paste(d)
-ex.paste(d)
+ex.paste()
+ex.paste()
+ex.paste()
 txt=FileNode("hello","txt")
 ex.add_file(txt)
 ex.dir_track[0].disp()
 ex.delete(d)
 ex.cut(txt)
-ex.paste(video)
+ex.paste()
 ex.dir_track[0].disp()
+
+ex.go_backward_arrow()
+ex.go_backward_arrow()
+ex.pwd()
+#ex.delete_name("C")
+ex.go_forward_arrow()
+ex.dir_track[0].disp()
+ex.pwd()
+ex.go_forward_arrow()
+ex.go_forward_arrow()
 
 print(type(ex.dir_tree.nodes[-1]))
 ex.delete(ex.dir_tree.nodes[-1])

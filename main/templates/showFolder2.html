@@ -611,7 +611,7 @@
         }
         setTimeout(function () {
             document.getElementById("thePr").classList.add("hidden");
-        }, getRandomInt(200, 600));
+        }, getRandomInt(50, 100));
         function showContextMenu(e, key) {
             e.preventDefault();
             // use key to custome
@@ -640,7 +640,10 @@
 
         document.getElementById('option2').addEventListener('click', function () {
             // alert('You clicked Option 2 =>' + currentKey);
-            let userInput = prompt("rename " + currentKey + " to ?");
+            var userInput = prompt("rename " + currentKey + " to ?");
+            while(userInput == ""){
+                userInput = prompt("rename " + currentKey + " to ?");
+            }
             if (confirm("rename to " + userInput + " ?")) {
                 $.ajax({
                     url: "{{apil}}",
