@@ -1,4 +1,5 @@
-import pptree
+# REQUIRED
+import pptree # pip install pptree
 from copy import deepcopy
 from abc import ABC, abstractmethod 
 
@@ -55,7 +56,7 @@ class DirNode(TreeNode):
 
     def add_child(self, node):
         node.parent=self
-        assert isinstance(node, TreeNode)
+        assert isinstance(node, TreeNode)   # Will checks is given node is instace of TreeNode
         self.children.append(node)
 
     def disp(self):     #implemented via pptree package
@@ -182,7 +183,19 @@ class FileSystem:
 
     def add_drive(self,node:DirNode):     # Adding drive Node to tree
         if self.current.depth() == 0 and self.FileSystem_size >= node.size:
-            self.dir_tree.insert(node,self.current)
+
+            # Check if a drive with the same name already exists
+            existing_node = self.name_to_node(node.name)
+            if existing_node:
+                count = 1
+                new_name = f"{node.name} ({count})"
+                # Find a new name with a unique suffix
+                while self.name_to_node(new_name) is not None:
+                    count += 1
+                    new_name = f"{node.name} ({count})"
+                node.name = new_name
+
+            self.dir_tree.insert(node, self.current)
             self.FileSystem_size -= node.size
             print(f"drive {node.name} created successfully")
         else:
@@ -195,12 +208,25 @@ class FileSystem:
 
 
 
-    def add_dir(self,node:DirNode):     # Adding directory Node to tree
-        if self.current.depth() >=1 :
-            self.dir_tree.insert(node,self.current)
-            print(f"add_dir {node.name} was successful ")
+    
+    def add_dir(self, node: DirNode):   # Adding directory Node to tree
+        if self.current.depth() >= 1:
+            # Check if a directory with the same name already exists
+            existing_node = self.name_to_node(node.name)
+            if existing_node:
+                count = 1
+                new_name = f"{node.name} ({count})"
+                # Find a new name with a unique suffix
+                while self.name_to_node(new_name) is not None:
+                    count += 1
+                    new_name = f"{node.name} ({count})"
+                node.name = new_name
+
+            self.dir_tree.insert(node, self.current)    # Adding new directory
+            print(f"add_dir {node.name} was successful")
         else:
             print(f"add_dir {node.name} Failed")
+
 
     def mkdir(self,name:str):       # Create and add directory Node to tree via name
         tmp=DirNode(name)
@@ -210,6 +236,19 @@ class FileSystem:
 
     def add_file(self,node:DirNode):        # Adding file Node to tree
         if self.current.depth() >=1 :
+            
+            # Check if a directory with the same name already exists
+            existing_node = self.name_to_node(node.name)
+            if existing_node:
+                count = 1
+                new_name = f"{node.name} ({count})"
+
+                # Find a new name with a unique suffix
+                while self.name_to_node(new_name) is not None:
+                    count += 1
+                    new_name = f"{node.name} ({count})"
+                node.name = new_name
+
             self.dir_tree.insert(node,self.current)
             print(f"add_file {node.name} was successful")
         else:
@@ -311,6 +350,9 @@ class FileSystem:
                 if node in self.dir_track:  # Deleting reference in dir_track
                     self.dir_track.remove(node)
             self.dir_tree.nodes.remove(node)    # Deleting Node in tree
+            
+        if node in self.__go_forward_arrow_stack:   # Update __go_forward_arrow_stack after deletion
+            self.__go_forward_arrow_stack.remove(node)
 
             
     def delete_name(self,name:str): # Deleting via name
@@ -320,7 +362,7 @@ class FileSystem:
 
 
     
-    def cut(self, node: TreeNode):
+    def cut(self, node: DirNode):
         self.__is_cuted=True    # This attribute tells paste method diffrance between copy and cut
         self.__virtual_copy_space=node
         
@@ -351,7 +393,8 @@ class FileSystem:
         if node in self.current.children:
             self.current=node
             self.dir_track.append(node)
-            self.__go_forward_arrow_stack=[]
+            if node not in self.__go_forward_arrow_stack:
+                self.__go_forward_arrow_stack=[]
             print(f"cd to {self.current.name} was successful")
         else:
             print(f"cd to {self.current.name} Failed")
@@ -370,7 +413,7 @@ class FileSystem:
 
     def go_forward_arrow(self): # Navigation to forward
 
-        if len(self.dir_track) >=2:
+        if len(self.__go_forward_arrow_stack) :
             self.dir_track.append(self.__go_forward_arrow_stack.pop())  # Pop last directory from go_forward_arrow_stack and append it to dir_track
             self.current=self.dir_track[-1] # Setting current directory
         else:
@@ -391,10 +434,10 @@ class FileSystem:
         self.current=self.dir_track[-1]
 
 def start():
-    # load or create Seryalized tree object
+    # load or create Serialized tree object
     import os
     import pickle
-    if os.path.exists("FileExplorer.pickle"):
+    if os.path.exists("FileExplorer.pickle"):# Checking file existance
         with open ("FileExplorer.pickle","rb") as data:
             filesystem : FileSystem= pickle.load(data)
     else:
@@ -403,107 +446,28 @@ def start():
 
     return filesystem
 
-ex=start()
-ex.show()
 
-
+# Some example
 """
+ex=start()
+
+
 ex.mkdrive("C",10)
 ex.mkdrive("D",10)
-print(ex.dir_tree.nodes)
+
 ex.cd_name("D")
 ex.mkdir("video")
 ex.mkdir("download")
 ex.mkdir("hello")
 
 
-ex.copy_name("video")
-ex.paste()
-
-ex.paste()
-
-ex.copy_name("video")
-ex.paste()
-ex.copy_name("video")
-ex.paste()
-ex.paste()
-ex.dir_track[0].disp()
-
-ex.cd_name("video")
-
 ex.go_backward_arrow()
-ex.go_backward_arrow()
-ex.pwd()
-ex.delete_name("D")
+ex.cd_name("C")
 ex.go_forward_arrow()
-ex.go_forward_arrow()
-
-print(ex.dir_track)
-ex.delete_name("C")
-ex.dir_track[0].disp()
-ex.show()
-ex.save()
-
-ex=FileSystem(100)
-c=DirNode("C",20)
-
-
-d=DirNode("D",10)
-ex.add_drive(c)
-ex.add_drive(d)
-ex.cd(c)
-download=DirNode("download")
-video=DirNode("video")
-ex.add_dir(download)
-ex.add_dir(video)
-ex.cd(download)
-print(ex.current)
+ex.mkfile("hello","txt")
 ex.pwd()
 
-ex.dir_track[0].disp()
+ex.show()"""
 
-ex.copy(download)
-ex.paste()
-ex.paste()
-ex.paste()
-txt=FileNode("hello","txt")
-ex.add_file(txt)
-ex.dir_track[0].disp()
-ex.delete(d)
-ex.cut(txt)
-ex.paste()
-ex.dir_track[0].disp()
-
-ex.go_backward_arrow()
-ex.go_backward_arrow()
-ex.pwd()
-#ex.delete_name("C")
-ex.go_forward_arrow()
-ex.dir_track[0].disp()
-ex.pwd()
-ex.go_forward_arrow()
-ex.go_forward_arrow()
-
-print(type(ex.dir_tree.nodes[-1]))
-ex.delete(ex.dir_tree.nodes[-1])
-
-
-ex.dir_track[0].disp()
-print(ex.dir_tree.nodes)
-
-print(ex.dir_tree.search("download copy copy"))
-
-
-ex.go_backward_arrow()
-ex.pwd()
-ex.go_backward_arrow()
-ex.pwd()
-
-ex.go_forward_arrow()
-ex.pwd()
-ex.go_forward_arrow()
-ex.pwd()
-
-ex.reset_up_arrow()
-ex.pwd()
-"""
+# To save chnges uncomment next line
+#ex.save()
