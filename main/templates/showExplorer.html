@@ -6,7 +6,6 @@
     <script
         src="https://cpwebassets.codepen.io/assets/common/stopExecutionOnTimeout-2c7831bb44f98c1391d6a4ffda0e1fd302503391ca806e7fcc7b9b87197aec26.js"></script>
     <title>Data Strcutrue Final Project File Explorer</title>
-    {% load static %}
     <link rel='stylesheet' href='https://pro.fontawesome.com/releases/v5.10.0/css/all.css'>
     <style>
         * {
@@ -514,19 +513,6 @@
                 url: "{{apil}}",
                 type: 'POST',
                 data: { key: "{{currentPathForNew}}", cd: x, mode: "cd" },
-                success: function (response) {
-                    location.reload(true);
-                },
-                error: function (error) {
-                    console.log(error);
-                }
-            });
-        }
-        function theJsFunctionOpen(x) {
-            $.ajax({
-                url: "{{apil}}",
-                type: 'POST',
-                data: { key: "{{currentPathForNew}}", open: x, mode: "open" },
                 success: function (response) {
                     location.reload(true);
                 },

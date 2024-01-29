@@ -193,10 +193,21 @@ class FileSystem:
 
     # -------------------------------- Modifier Methods  -------------------------------- #
 
-
-    def add_drive(self,node:DirNode):     # Adding drive Node to tree
+    
+    def add_drive(self, node: DirNode):      # Adding drive Node to tree
         if self.current.depth() == 0 and self.FileSystem_size >= node.size:
-            self.dir_tree.insert(node,self.current)
+            # Check if a drive with the same name already exists
+            existing_node = self.name_to_node(node.name)
+            if existing_node:
+                count = 1
+                new_name = f"{node.name}_{count}"
+                # Find a new name with a unique suffix
+                while self.name_to_node(new_name) is not None:
+                    count += 1
+                    new_name = f"{node.name} ({count})"
+                node.name = new_name
+
+            self.dir_tree.insert(node, self.current)
             self.FileSystem_size -= node.size
             print(f"drive {node.name} created successfully")
         else:
@@ -209,10 +220,21 @@ class FileSystem:
 
 
 
-    def add_dir(self,node:DirNode):     # Adding directory Node to tree
-        if self.current.depth() >=1 :
-            self.dir_tree.insert(node,self.current)
-            print(f"add_dir {node.name} was successful ")
+    def add_dir(self, node: DirNode):
+        if self.current.depth() >= 1:
+            # Check if a directory with the same name already exists
+            existing_node = self.name_to_node(node.name)
+            if existing_node:
+                count = 1
+                new_name = f"{node.name} ({count})"
+                # Find a new name with a unique suffix
+                while self.name_to_node(new_name) is not None:
+                    count += 1
+                    new_name = f"{node.name} ({count})"
+                node.name = new_name
+
+            self.dir_tree.insert(node, self.current)    # Adding new directory
+            print(f"add_dir {node.name} was successful")
         else:
             print(f"add_dir {node.name} Failed")
 
@@ -224,6 +246,19 @@ class FileSystem:
 
     def add_file(self,node:DirNode):        # Adding file Node to tree
         if self.current.depth() >=1 :
+
+            # Check if a directory with the same name already exists
+            existing_node = self.name_to_node(node.name)
+            if existing_node:
+                count = 1
+                new_name = f"{node.name} ({count})"
+
+                # Find a new name with a unique suffix
+                while self.name_to_node(new_name) is not None:
+                    count += 1
+                    new_name = f"{node.name} ({count})"
+                node.name = new_name
+
             self.dir_tree.insert(node,self.current)
             print(f"add_file {node.name} was successful")
         else:
@@ -325,6 +360,9 @@ class FileSystem:
                 if node in self.dir_track:  # Deleting reference in dir_track
                     self.dir_track.remove(node)
             self.dir_tree.nodes.remove(node)    # Deleting Node in tree
+        
+        if node in self.__go_forward_arrow_stack:   # Update __go_forward_arrow_stack after deletion
+            self.__go_forward_arrow_stack.remove(node)
 
             
     def delete_name(self,name:str): # Deleting via name
@@ -407,13 +445,14 @@ class FileSystem:
                     self.go_backward_arrow()
         traverse(self.dir_tree.root, [])
         return self.__removeDuplicates__(["/".join(path) for path in paths])
+    
     def rename(self,current_name:str, new_name:str):
         node=self.name_to_node(current_name)
         node.name=new_name
 
     def go_forward_arrow(self): # Navigation to forward
 
-        if len(self.dir_track) >=2:
+        if len(self.__go_forward_arrow_stack) :
             self.dir_track.append(self.__go_forward_arrow_stack.pop())  # Pop last directory from go_forward_arrow_stack and append it to dir_track
             self.current=self.dir_track[-1] # Setting current directory
         else:

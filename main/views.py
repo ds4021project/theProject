@@ -9,7 +9,6 @@ import sys, shutil, os, imghdr, pickle
 theFileExplorerObject = FileSystem(10000000000)
  
 
-theRootPathOfFiles = "theFileExplorerBase/"
 theFirstCurrentPath = "This PC"
 
 thePickleFile = "theFileExplorerBase.pickle"
@@ -82,7 +81,7 @@ def listOfFileRoot(r) :
             theJsFunc = f"theJsFunctionOpen('{d}')"
         theResult[d] = {"type":tmpTyp,"forO":d,"href":theJsFunc}
     print("=> "*10,theFileExplorerObject.theFirstRun)
-    return render(r,"showFolder2.html",{"tehCurentPath":theCP,"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(),"showNewFile":showNewFile,"theNameNewFolder":theNameNewFolder,"isInCutOrCopy":theFileExplorerObject.isInCutOrCopy,"theFirstRun":theFileExplorerObject.theFirstRun})
+    return render(r,"showExplorer.html",{"tehCurentPath":theCP,"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(),"showNewFile":showNewFile,"theNameNewFolder":theNameNewFolder,"isInCutOrCopy":theFileExplorerObject.isInCutOrCopy,"theFirstRun":theFileExplorerObject.theFirstRun})
 
 
 @csrf_exempt
