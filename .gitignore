@@ -3,3 +3,8 @@ main/migrations/*
 fe/__pycache__/*
 theFileExplorerBase/*
 main/templatetags/*
+build/*
+dist/*
+start.spec
+start.py
+manage.py
