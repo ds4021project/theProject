@@ -351,7 +351,7 @@
     {% if theFirstRun %}
     <script>
         var theFileSystemSize = prompt("this is first run, size of file system ?");
-        while(theFileSystemSize == null || theFileSystemSize == "" || !Number.isInteger(theFileSystemSize)){
+        while(theFileSystemSize == null || theFileSystemSize == "" || isNaN(parseFloat(theFileSystemSize))){
             theFileSystemSize = prompt("you most enter size, this is first run, size of file system ?");
         }
         $.ajax({
@@ -558,7 +558,7 @@
                 newDriveName = prompt("new folder name ?");
             }
             var fileSize = prompt("size of " + newDriveName + " ?");
-            while(!Number.isInteger(fileSize)){
+            while(isNaN(parseFloat(fileSize))){
             fileSize = prompt("size of " + newDriveName + " ?");
             }
             $.ajax({

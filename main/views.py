@@ -30,6 +30,7 @@ if(not os.path.exists(thePickleFile)) :
 else :
     theFileExplorerObject = loadPickle()
 
+
 def getAllDir() :
     theCopyOfEx = deepcopy(theFileExplorerObject)
     theCopyOfEx.reset_up_arrow()
@@ -59,9 +60,6 @@ def calCurrentPath() :
     return theDict
 def listOfFileRoot(r) :
     global theFileExplorerObject
-    if(theFileExplorerObject.inEditMode == True) :
-        return render(r,"editFile.html",{"fileContent":"CONTECNT","title":"THE PATH","sf":r.build_absolute_uri(reverse("doSomething")),"backUrl":"doBackUrl()"})
-        
     theAllFile = theFileExplorerObject.get_children_dict()
     theResult = {}
     print(theAllFile)
@@ -83,9 +81,6 @@ def listOfFileRoot(r) :
             tmpTyp = "rawFile"
             theJsFunc = f"theJsFunctionOpen('{d}')"
         theResult[d] = {"type":tmpTyp,"forO":d,"href":theJsFunc}
-    # print(calCurrentPath())
-    # return render(r,"showFolder2.html",{"tehCurentPath":calCurrentPath(),"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(r)})
-    # getAllDir()
     print("=> "*10,theFileExplorerObject.theFirstRun)
     return render(r,"showFolder2.html",{"tehCurentPath":theCP,"listOfFiles":theResult,"apil":r.build_absolute_uri(reverse("doSomething")),"currentPathForNew":"","fileTree":getAllDir(),"showNewFile":showNewFile,"theNameNewFolder":theNameNewFolder,"isInCutOrCopy":theFileExplorerObject.isInCutOrCopy,"theFirstRun":theFileExplorerObject.theFirstRun})
 
@@ -116,10 +111,6 @@ def doSomething(r) :
             print(theFileExplorerObject.go_forward_arrow())
         elif data["mode"] == "up" :
             print(theFileExplorerObject.reset_up_arrow())
-        elif data["mode"] == "open" :
-            theFileExplorerObject.inEditMode = True
-        elif data["mode"] == "close" :
-            theFileExplorerObject.inEditMode = False
         elif data["mode"] == "delete" :
             theFileExplorerObject.delete_name(data['key'])
             print("dd",data)

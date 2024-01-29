@@ -122,7 +122,7 @@ class FileSystem:
 
         # initializing General tree
         self.dir_tree=Tree()
-        self.dir_tree.root=DirNode("this PC",None)
+        self.dir_tree.root=DirNode("This PC",None)
         self.current=self.dir_tree.root
 
         self.dir_track=[self.dir_tree.root]     # dir_track save our route for This PC
@@ -133,8 +133,6 @@ class FileSystem:
         # copy and paste attributes
         self.__virtual_copy_space=None
         self.__is_cuted=False
-        self.inEditMode = False
-        self.editFileName = ""
         self.isInCutOrCopy = False
         self.theFirstRun = False
 
@@ -363,11 +361,12 @@ class FileSystem:
     # -------------------------------- Navigation Methods  -------------------------------- #
 
 
-    def cd(self,node:DirNode):  # Will change directory via Node
+    def __cd__(self,node:DirNode):  # Will change directory via Node
         if node in self.current.children:
             self.current=node
             self.dir_track.append(node)
-            self.__go_forward_arrow_stack=[]
+            if node not in self.__go_forward_arrow_stack:
+                self.__go_forward_arrow_stack=[]
             print(f"cd to {self.current.name} was successful")
         else:
             print(f"cd to {self.current.name} Failed")
@@ -379,9 +378,9 @@ class FileSystem:
             self.go_backward_arrow()
         else:
             node=self.name_to_node(name)
-            self.cd(node)
+            self.__cd__(node)
     
-    def removeDuplicates(self,paths):
+    def __removeDuplicates__(self,paths):
         newPathsN = []            
         for path in paths :
             if paths[0] != path :
@@ -407,7 +406,7 @@ class FileSystem:
                     traverse(self.current, path + [child_name])
                     self.go_backward_arrow()
         traverse(self.dir_tree.root, [])
-        return self.removeDuplicates(["/".join(path) for path in paths])
+        return self.__removeDuplicates__(["/".join(path) for path in paths])
     def rename(self,current_name:str, new_name:str):
         node=self.name_to_node(current_name)
         node.name=new_name
