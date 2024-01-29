@@ -210,12 +210,13 @@ class FileSystem:
             self.dir_tree.insert(node, self.current)
             self.FileSystem_size -= node.size
             print(f"drive {node.name} created successfully")
+            return True
         else:
             print(f"drive {node.name} creation Failed")
-
+            return False
     def mkdrive(self,name:str,drive_size:int):      # Create and add drive Node to tree via name
             tmp=DirNode(name,drive_size)
-            self.add_drive(tmp)
+            return self.add_drive(tmp)
 
 
 

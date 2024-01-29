@@ -1,6 +1,6 @@
 from django.shortcuts import render, HttpResponse
 from django.urls import reverse
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from .theTreeBase import *
 import sys, shutil, os, imghdr, pickle
@@ -98,7 +98,10 @@ def doSomething(r) :
         if data['mode'] == "newFolder" :
             print(theFileExplorerObject.mkdir(data['new']))
         elif data["mode"] == "newDrive" :
-            print(theFileExplorerObject.mkdrive(data['new'],int(data['size'])))
+            result = theFileExplorerObject.mkdrive(data['new'],int(data['size']))
+            print(result)
+            if result == False :
+                return HttpResponseBadRequest("bad")
         elif data['mode'] == "newFile" :
             print(theFileExplorerObject.mkfile(data['new'],"txt"))
         elif data['mode'] == "cd" :
@@ -130,4 +133,4 @@ def doSomething(r) :
 
         savePickle()
         return JsonResponse({"CODE":200})
-    return JsonResponse({"CODE":400})
+    return HttpResponseBadRequest("bad")
